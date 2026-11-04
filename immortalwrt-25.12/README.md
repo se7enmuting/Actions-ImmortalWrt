@@ -16,7 +16,7 @@
 
 | 功能 | 实现 |
 |---|---|
-| 代理 | 官方源 OpenClash 0.48.002；Mihomo 1.19.33；官方源 PassWall 26.10.22，Xray＋sing-box |
+| 代理 | 官方源 OpenClash 0.48.002；Meta Alpha alpha-gbc76c13 amd64-v2；官方源 PassWall 26.10.22，Xray＋sing-box |
 | 动态 DNS | 原生 luci-app-ddns；Cloudflare、DNSPod 腾讯云 API v3，HTTPS 与 CA 证书 |
 | 证书自动续签 | 官方 acme.sh 3.1.3-r3、DNS API 模块、原生中文 LuCI 页面 |
 | 设备流量与固定上下行限速 | Bandix 0.12.12（LuCI 0.12.12-r5），在设备规则里配置全天生效的上下行速率 |
@@ -34,7 +34,7 @@
 
 sources.lock.json 固定全部输入。以后升级要主动审阅并修改锁文件，不会在每次构建时自动追最新。
 
-Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Mihomo 使用已在现网验证的上游正式版 amd64-v1，校验 SHA256 后嵌入，不要求 AVX。四份地址/域名/ASN 数据库也按锁文件校验后预装；后续通过 OpenClash 独立更新。
+Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Meta 使用 OpenClash 官方 core/master/meta 通道的 Alpha amd64-v2，固定到已验证版本的源提交并校验 SHA256，不要求 AVX；PVE 客机需暴露完整的 x86-64-v2 指令集，可采用 x86-64-v2-AES。四份地址/域名/ASN 数据库也按锁文件校验后预装；后续通过 OpenClash 独立更新。
 
 OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6.1.4；这是官方配套集成，版本号不等于未维护。没有额外切换到上游 7.x 或修改旧版来强制兼容。
 

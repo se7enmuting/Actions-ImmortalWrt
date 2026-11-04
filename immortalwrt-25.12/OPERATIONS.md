@@ -26,7 +26,9 @@ DDNS 使用 `dnspod.cn-v3`：用户名为 SecretId，密码为 SecretKey；域�
 
 ## OpenClash 内核和数据库
 
-固件嵌入实测的官方 Mihomo 稳定版 amd64-v1，保持 `core_type=Meta`、`core_version=linux-amd64-v1`。不依赖网页默认下载的 Alpha 内核替换它。
+固件嵌入 OpenClash 官方 Meta Alpha 通道的 amd64-v2，保持 `core_type=Meta`、`core_version=linux-amd64-v2`。当前锁定现网已验证的 `alpha-gbc76c13`，压缩包来自 `core` 分支的固定提交，版本、架构和 SHA256 一同记录；不再默认使用 Mihomo 稳定版。后续追踪新的 Alpha 时更新锁文件并核验兼容性，不能仅修改版本号或跳过校验。
+
+PVE 客机需要实际获得完整的 x86-64-v2 指令集，不能只看宿主机型号。可采用 `x86-64-v2-AES` 或经核实的其他 CPU 类型；`host` 并非必须。更改虚拟 CPU 类型通常需要关机再启动。仅更换同版本的 v1/v2 时，OpenClash 更新页面可能因只比较版本号而跳过下载，需另行核对二进制架构。编译版本标题旁的固定星号不是更新或失败状态。
 
 Country.mmdb、GeoIP.dat、GeoSite.dat、ASN.mmdb 也预装经过 SHA256 校验的基线，首次启动不必先借助代理下载这些数据库。数据库来源和摘要记录在 `sources.lock.json`，它们不是每次构建自动追最新。ASN 发布地址为上游滚动标签，内容变化时校验会失败，需要审阅并更新锁文件，不能跳过校验。
 

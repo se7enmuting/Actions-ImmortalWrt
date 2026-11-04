@@ -93,7 +93,7 @@ def main():
         f"- Recipe commit: {os.getenv('GITHUB_SHA', 'local')}\n"
         f"- Official release source: {lock['core']['commit']}\n"
         f"- Build: {os.getenv('GITHUB_RUN_NUMBER', 'local')}/{os.getenv('GITHUB_RUN_ATTEMPT', '1')}\n"
-        f"- Mihomo: {lock['mihomo']['version']} (baseline amd64, SHA256 checked)\n"
+        f"- Mihomo: {lock['mihomo']['version']} ({lock['mihomo']['architecture']}, SHA256 checked)\n"
         f"- Bandix UI: {lock['bandix_luci']['release']}; backend uses upstream checksummed binary.\n"
         "- Official feeds: 25.12 maintenance revisions recorded in build-lock.json.\n"
         "- Package inclusion and Bandix/PVE kernel checks: passed.\n\n"

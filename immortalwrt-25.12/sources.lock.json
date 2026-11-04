@@ -37,9 +37,13 @@
     "release": "v0.12.12-r5"
   },
   "mihomo": {
-    "version": "v1.19.33",
-    "url": "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-v1-v1.19.33.gz",
-    "sha256": "8ec92e7b2fdc6b853ba00156bab7e4e965c8b0d843b8c4ac8ab98795f02ad524"
+    "version": "alpha-gbc76c13",
+    "channel": "alpha",
+    "architecture": "linux-amd64-v2",
+    "archive_format": "tar.gz",
+    "source_commit": "70e44a6f730a11730a1daa6b0a71a7634c87fe68",
+    "url": "https://raw.githubusercontent.com/vernesong/OpenClash/70e44a6f730a11730a1daa6b0a71a7634c87fe68/master/meta/clash-linux-amd64-v2.tar.gz",
+    "sha256": "a25eac7d2d21543654ae6ba4322bc69ef514b7ba12b7d66df3a52bb372911cff"
   },
   "geodata": [
     {

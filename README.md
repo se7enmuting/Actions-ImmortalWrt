@@ -19,7 +19,7 @@
 |---|---|
 | 系统 | 官方 ImmortalWrt 25.12.2；源码和 feeds 固定提交 |
 | 平台 | x86_64，PVE/KVM，BIOS/UEFI，ext4/squashfs，QCOW2 |
-| 代理 | OpenClash＋Mihomo、PassWall（Xray＋sing-box） |
+| 代理 | OpenClash＋Meta Alpha amd64-v2、PassWall（Xray＋sing-box） |
 | 流量及限速 | Bandix、nlbwmon、vnStat2，支持配置设备上下行限速 |
 | 应用识别限制 | OpenAppFilter |
 | 动态 DNS | 原生 LuCI 动态 DNS，Cloudflare、DNSPod API v3 |
