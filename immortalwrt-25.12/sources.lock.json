@@ -38,7 +38,29 @@
   },
   "mihomo": {
     "version": "v1.19.33",
-    "url": "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-compatible-v1.19.33.gz",
-    "sha256": "386508bfb1c72c43b6a0eda73708ecdce82546581b0ebcb16366c53757c622b6"
-  }
+    "url": "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-v1-v1.19.33.gz",
+    "sha256": "8ec92e7b2fdc6b853ba00156bab7e4e965c8b0d843b8c4ac8ab98795f02ad524"
+  },
+  "geodata": [
+    {
+      "file": "Country.mmdb",
+      "url": "https://raw.githubusercontent.com/alecthw/mmdb_china_ip_list/643205a0ca74e8310588a8fce50836b007576e24/lite/Country.mmdb",
+      "sha256": "6f361201de55f3d449430d4231c83526b9adf1c99c1851b417addcc88653606b"
+    },
+    {
+      "file": "GeoIP.dat",
+      "url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202611032326/geoip.dat",
+      "sha256": "06c1d50d0013af57ffe78c5af93f0dc6aa998890f3ee231393816f9117810c4a"
+    },
+    {
+      "file": "GeoSite.dat",
+      "url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202611032326/geosite.dat",
+      "sha256": "0b2a5c5b82b031f6b079f9a5b47814914f3fc94d6c689d081b8634624cfe1d55"
+    },
+    {
+      "file": "ASN.mmdb",
+      "url": "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb",
+      "sha256": "3169b9ea7dad762f6837b95408dadc1173f47be33be2d83b6c90e67a57a7eb2e"
+    }
+  ]
 }

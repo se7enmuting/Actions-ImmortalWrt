@@ -18,6 +18,7 @@
 |---|---|
 | 代理 | 官方源 OpenClash 0.48.002；Mihomo 1.19.33；官方源 PassWall 26.10.22，Xray＋sing-box |
 | 动态 DNS | 原生 luci-app-ddns；Cloudflare、DNSPod 腾讯云 API v3，HTTPS 与 CA 证书 |
+| 证书自动续签 | 官方 acme.sh 3.1.3-r3、DNS API 模块、原生中文 LuCI 页面 |
 | 设备流量与固定上下行限速 | Bandix 0.12.12（LuCI 0.12.12-r5），在设备规则里配置全天生效的上下行速率 |
 | 设备历史统计 | 原生 nlbwmon，按 MAC 汇总；数据库保存到 /etc/nlbwmon，每小时提交 |
 | 全网历史统计 | 原生 vnStat2，安装后选择真实 WAN 设备，避免叠加 WAN/WAN6 重复计数 |
@@ -33,7 +34,7 @@
 
 sources.lock.json 固定全部输入。以后升级要主动审阅并修改锁文件，不会在每次构建时自动追最新。
 
-Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Mihomo 也使用上游正式版、校验 SHA256 后嵌入，选择不要求 AVX 的 amd64-compatible 版本。
+Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Mihomo 使用已在现网验证的上游正式版 amd64-v1，校验 SHA256 后嵌入，不要求 AVX。四份地址/域名/ASN 数据库也按锁文件校验后预装；后续通过 OpenClash 独立更新。
 
 OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6.1.4；这是官方配套集成，版本号不等于未维护。没有额外切换到上游 7.x 或修改旧版来强制兼容。
 
@@ -43,7 +44,10 @@ OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6
 - x86/64 官方内核已内建 VirtIO 网卡、磁盘、SCSI、balloon、console；固件另包含 qemu-ga。PVE 内仍需为新 VM 启用 Guest Agent。
 - Bandix 默认接口 br-lan，只开流量模块与历史保存，关闭连接、DNS 和 GeoIP 分析。实际 LAN 接口不同时先修改。监听 127.0.0.1，通过 LuCI 使用。
 - 关闭软件/硬件流量卸载，不装 Turbo ACC；Bandix 与应用过滤需要可观察的数据路径。
-- OpenClash、PassWall、应用过滤及 UPnP 默认关闭，安装后按需配置。两个代理先只启用一个。应用识别不是对任意加密协议或代理隧道的完整保证。
+- OpenClash、PassWall、应用过滤、UPnP、DDNS、ACME 默认关闭，安装后按需配置。两个代理先只启用一个。应用识别不是对任意加密协议或代理隧道的完整保证。
+- IPv6 使用新版 odhcpd 原生前缀历史及持久目录，不包含旧版前缀修复脚本和 5 分钟租期改法。
+- ACME 首次签发、凭据填写、uHTTPd 自动重载、DNSPod 参数注意事项及离线迁移经验见 [OPERATIONS.md](OPERATIONS.md)。
+- 包含与已上线环境一致的临时入站 TCP/IPv4 Options 过滤；这不代表基础内核已修复，详见操作说明。
 - 单设备固定限速由 Bandix 的设备上下行规则承担；这是流量限速，不是 SQM 队列公平调度。无需额外安装仅支持 IPv4 的 EQoS。
 - vnStat2 必须在 LuCI 里指定实际出口接口。PPPoE、VLAN、多 LAN、双栈及代理流量的计数口径均需在现场验证。多个统计插件的数字不能直接相加。
 - 在独立 PVE VM 上启动，接隔离网络，避免默认 LAN 地址/DHCP 与现网冲突。输出并不自动安装到现有 VM。

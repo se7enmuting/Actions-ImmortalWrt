@@ -55,6 +55,17 @@ def main():
         shutil.copyfileobj(source, target)
     core.chmod(0o755)
     archive.unlink()
+    for spec in lock["geodata"]:
+        if spec["file"] not in {"Country.mmdb", "GeoIP.dat", "GeoSite.dat", "ASN.mmdb"}:
+            raise RuntimeError("Unsupported geodata destination")
+        target = work / "files/etc/openclash" / spec["file"]
+        with urllib.request.urlopen(spec["url"], timeout=120) as response, target.open("wb") as out:
+            shutil.copyfileobj(response, out)
+        with target.open("rb") as stream:
+            digest = hashlib.file_digest(stream, "sha256").hexdigest()
+        if digest != spec["sha256"]:
+            raise RuntimeError(f"Geodata SHA256 mismatch: {spec['file']}")
+        target.chmod(0o644)
     # OpenClash writes the architecture choice to UCI; compatible amd64 avoids
     # assuming AVX support in either PVE guest.
     (work / "build-lock.json").write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")

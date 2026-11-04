@@ -16,6 +16,9 @@ REQUIRED_PACKAGES = {
     "luci-app-bandix", "bandix", "luci-app-appfilter", "appfilter", "kmod-oaf",
     "luci-app-nlbwmon", "luci-app-vnstat2", "luci-theme-argon",
     "qemu-ga", "miniupnpd-nftables", "luci-app-wol",
+    "acme-common", "acme-acmesh", "acme-acmesh-dnsapi", "luci-app-acme",
+    "luci-i18n-acme-zh-cn", "openssl-util", "dnsmasq-full", "bash", "curl",
+    "ca-bundle", "ruby", "ruby-yaml", "kmod-tun", "kmod-inet-diag", "kmod-nft-tproxy",
 }
 FORBIDDEN_PACKAGES = {
     "luci-app-passwall2", "luci-app-ddns-go", "ddns-go", "luci-app-vlmcsd",
@@ -54,6 +57,16 @@ def validate(work):
                 raise RuntimeError(f"Missing {fs}/{suffix}")
     if not list(target.glob("*.qcow2*")):
         raise RuntimeError("Missing PVE QCOW2 images")
+    roots = list((work / "build_dir").glob("target-*/root-*/etc/openclash"))
+    if len(roots) != 1:
+        raise RuntimeError("Expected one assembled OpenClash root filesystem")
+    lock = json.loads((work / "build-lock.json").read_text())
+    for spec in lock["geodata"]:
+        path = roots[0] / spec["file"]
+        if not path.is_file() or sha256_file(path) != spec["sha256"]:
+            raise RuntimeError(f"Assembled geodata mismatch: {spec['file']}")
+    if not (roots[0] / "core/clash_meta").is_file():
+        raise RuntimeError("Assembled Mihomo binary missing")
     return target, kernels[0]
 
 
@@ -73,6 +86,7 @@ def main():
     shutil.copyfile(kernel_config, output / "kernel.config")
     shutil.copyfile(work / "build-lock.json", output / "build-lock.json")
     shutil.copyfile(RECIPE / "README.md", output / "README.zh-CN.md")
+    shutil.copyfile(RECIPE / "OPERATIONS.md", output / "OPERATIONS.zh-CN.md")
     lock = json.loads((work / "build-lock.json").read_text())
     report = (
         f"# ImmortalWrt {lock['release']} PVE\n\n"
@@ -84,7 +98,7 @@ def main():
         "- Official feeds: 25.12 maintenance revisions recorded in build-lock.json.\n"
         "- Package inclusion and Bandix/PVE kernel checks: passed.\n\n"
         "Packages: OpenClash, PassWall (Xray + sing-box), native DDNS, Bandix,\n"
-        "OpenAppFilter, nlbwmon, vnStat2, Argon, WOL, UPnP and qemu-ga.\n\n"
+        "OpenAppFilter, nlbwmon, vnStat2, Argon, native ACME DNS API, WOL, UPnP and qemu-ga.\n\n"
         "No KMS, DDNS-Go, PassWall2, SQM, old wrtbwmon or EQoS.\n\n"
         "This is a custom build from an official release, not an official binary.\n"
         "Runtime compatibility and traffic accounting are NOT established by build success.\n"

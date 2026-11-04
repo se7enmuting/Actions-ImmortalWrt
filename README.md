@@ -23,6 +23,7 @@
 | 流量及限速 | Bandix、nlbwmon、vnStat2，支持配置设备上下行限速 |
 | 应用识别限制 | OpenAppFilter |
 | 动态 DNS | 原生 LuCI 动态 DNS，Cloudflare、DNSPod API v3 |
+| 证书续签 | 原生 ACME、acme.sh DNS API、中文管理页面；配置后自动续签 |
 | 界面及其他 | Argon、简体中文、WOL、UPnP、QEMU Guest Agent |
 | 排除 | KMS、DDNS-Go、PassWall2、SQM、旧 wrtbwmon 和旧管控插件 |
 
@@ -33,6 +34,7 @@
 - [插件版本、默认开关、PVE 试机及迁移说明](immortalwrt-25.12/README.md)
 - [源码和依赖锁文件](immortalwrt-25.12/sources.lock.json)
 - [固件配置](immortalwrt-25.12/config.seed)
+- [ACME 配置及现场迁移经验](immortalwrt-25.12/OPERATIONS.md)
 - [固件下载](https://github.com/se7enmuting/Actions-ImmortalWrt/releases)
 
 固件不包含密码、订阅及 DDNS 密钥。建议先使用隔离的 PVE 测试虚拟机验证；编译成功不代表实际网络功能已验收。
