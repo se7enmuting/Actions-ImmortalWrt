@@ -16,6 +16,10 @@ CONFIG_GRUB_TIMEOUT="3"
 # CONFIG_VMDK_IMAGES is not set
 # CONFIG_VHDX_IMAGES is not set
 
+# Core x86 defaults need the sensor recipe linked before defconfig.
+CONFIG_PACKAGE_autocore=y
+CONFIG_PACKAGE_lm-sensors=y
+
 # Native LuCI, Chinese and Argon from the maintained 25.12 feed.
 CONFIG_PACKAGE_luci=y
 CONFIG_LUCI_LANG_zh_Hans=y

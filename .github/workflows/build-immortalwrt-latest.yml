@@ -84,6 +84,7 @@ jobs:
           if grep -q 'recursive dependency detected' defconfig.log; then exit 1; fi
           python3 "$GITHUB_WORKSPACE/immortalwrt-25.12/scripts/verify_config.py" \
             "$GITHUB_WORKSPACE/immortalwrt-25.12/config.seed" .config
+          python3 "$GITHUB_WORKSPACE/immortalwrt-25.12/scripts/verify_dependencies.py" "$BUILD_DIR"
           ./scripts/diffconfig.sh > config.buildinfo
 
       - name: Download sources
