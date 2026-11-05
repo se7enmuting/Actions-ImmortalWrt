@@ -1,4 +1,5 @@
-immortalwrt-25.12/** text eol=lf
-.github/workflows/build-immortalwrt.yml text eol=lf
+immortalwrt-*/** text eol=lf
+.github/workflows/*.yml text eol=lf
 README.md text eol=lf
 LICENSE text eol=lf
+.gitattributes text eol=lf

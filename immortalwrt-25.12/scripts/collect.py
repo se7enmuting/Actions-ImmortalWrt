@@ -13,7 +13,7 @@ RECIPE = Path(__file__).resolve().parents[1]
 REQUIRED_PACKAGES = {
     "luci-app-openclash", "luci-app-passwall", "xray-core", "sing-box",
     "luci-app-ddns", "ddns-scripts-cloudflare", "ddns-scripts-dnspod-v3",
-    "luci-app-bandix", "bandix", "luci-app-appfilter", "appfilter", "kmod-oaf",
+    "luci-app-bandix", "bandix", "luci-app-oaf", "appfilter", "kmod-oaf",
     "luci-app-nlbwmon", "luci-app-vnstat2", "luci-theme-argon",
     "qemu-ga", "miniupnpd-nftables", "luci-app-wol",
     "acme-common", "acme-acmesh", "acme-acmesh-dnsapi", "luci-app-acme",
@@ -65,8 +65,9 @@ def validate(work):
         path = roots[0] / spec["file"]
         if not path.is_file() or sha256_file(path) != spec["sha256"]:
             raise RuntimeError(f"Assembled geodata mismatch: {spec['file']}")
-    if not (roots[0] / "core/clash_meta").is_file():
-        raise RuntimeError("Assembled Mihomo binary missing")
+    core = roots[0] / "core/clash_meta"
+    if not core.is_file() or sha256_file(core) != lock["mihomo"]["binary_sha256"]:
+        raise RuntimeError("Assembled Mihomo binary mismatch")
     return target, kernels[0]
 
 
@@ -85,22 +86,25 @@ def main():
     shutil.copyfile(work / ".config", output / "resolved.config")
     shutil.copyfile(kernel_config, output / "kernel.config")
     shutil.copyfile(work / "build-lock.json", output / "build-lock.json")
+    shutil.copyfile(RECIPE / "sources.json", output / "sources.json")
     shutil.copyfile(RECIPE / "README.md", output / "README.zh-CN.md")
     shutil.copyfile(RECIPE / "OPERATIONS.md", output / "OPERATIONS.zh-CN.md")
     lock = json.loads((work / "build-lock.json").read_text())
     report = (
         f"# ImmortalWrt {lock['release']} PVE\n\n"
         f"- Recipe commit: {os.getenv('GITHUB_SHA', 'local')}\n"
-        f"- Official release source: {lock['core']['commit']}\n"
+        f"- System branch: {lock['core']['ref']} at {lock['core']['commit']}\n"
+        f"- Resolved at (UTC): {lock['resolved_at']}\n"
         f"- Build: {os.getenv('GITHUB_RUN_NUMBER', 'local')}/{os.getenv('GITHUB_RUN_ATTEMPT', '1')}\n"
         f"- Mihomo: {lock['mihomo']['version']} ({lock['mihomo']['architecture']}, SHA256 checked)\n"
-        f"- Bandix UI: {lock['bandix_luci']['release']}; backend uses upstream checksummed binary.\n"
+        "- Plugins: upstream master/main revisions recorded in build-lock.json.\n"
+        "- Bandix backend uses the upstream recipe and checksummed binary.\n"
         "- Official feeds: 25.12 maintenance revisions recorded in build-lock.json.\n"
         "- Package inclusion and Bandix/PVE kernel checks: passed.\n\n"
         "Packages: OpenClash, PassWall (Xray + sing-box), native DDNS, Bandix,\n"
         "OpenAppFilter, nlbwmon, vnStat2, Argon, native ACME DNS API, WOL, UPnP and qemu-ga.\n\n"
         "No KMS, DDNS-Go, PassWall2, SQM, old wrtbwmon or EQoS.\n\n"
-        "This is a custom build from an official release, not an official binary.\n"
+        "This is a custom build from the latest official 25.12 maintenance branch.\n"
         "Runtime compatibility and traffic accounting are NOT established by build success.\n"
         "Use an isolated PVE test VM first. Read README.zh-CN.md before installation.\n"
         "Do not restore a complete 18.06 configuration archive.\n"

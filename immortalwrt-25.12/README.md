@@ -1,10 +1,10 @@
-# ImmortalWrt 25.12.2 · PVE 手动编译
+# ImmortalWrt 25.12 Latest · PVE 手动编译
 
 适用于 g-pve / b-pve 下的 x86_64 路由虚拟机。两地共用固件，网络、密码、订阅及 DDNS 凭据在安装后分别配置。
 
 ## 如何运行
 
-进入仓库 Actions → **Build ImmortalWrt PVE (Manual)** → **Run workflow**。
+进入仓库 Actions → **Build ImmortalWrt PVE (Latest 25.12)** → **Run workflow**。
 
 - operation=build：编译固件；默认保存 Artifact，并发布独立 Release。
 - operation=configure：只准备源码、解析并检查配置，不下载全部编译依赖、不编译固件、不发布 Release。
@@ -12,31 +12,39 @@
 
 本 Workflow 只有 workflow_dispatch 触发器。提交代码、PR、定时任务或 repository_dispatch 均不会触发它。只在本仓库保存构建记录和产物，不远程部署。
 
+## 更新范围
+
+每次运行自动解析 [sources.json](sources.json) 中的上游最新提交与发布文件，生成本次 `build-lock.json`，无需人工升级锁文件。系统与原生 feeds 跟随 `openwrt-25.12`；独立插件跟随各自 master/main。具体来源及边界见[仓库首页](../README.md#最新版如何更新)。
+
+需要旧基线时，使用独立的 **Fixed 25.12.2 / 20261105** 流程。
+
 ## 插件范围
 
 | 功能 | 实现 |
 |---|---|
-| 代理 | 官方源 OpenClash 0.48.002；Meta Alpha alpha-gbc76c13 amd64-v2；官方源 PassWall 26.10.22，Xray＋sing-box |
+| 代理 | 上游 master 的 OpenClash；最新 Meta Alpha amd64-v2；上游 main 的 PassWall 与依赖配方，Xray＋sing-box |
 | 动态 DNS | 原生 luci-app-ddns；Cloudflare、DNSPod 腾讯云 API v3，HTTPS 与 CA 证书 |
-| 证书自动续签 | 官方 acme.sh 3.1.3-r3、DNS API 模块、原生中文 LuCI 页面 |
-| 设备流量与固定上下行限速 | Bandix 0.12.12（LuCI 0.12.12-r5），在设备规则里配置全天生效的上下行速率 |
+| 证书自动续签 | 25.12 维护源的原生 acme.sh、DNS API 模块、原生中文 LuCI 页面 |
+| 设备流量与固定上下行限速 | 上游 main 的 Bandix 后端打包与 LuCI，在设备规则里配置全天生效的上下行速率 |
 | 设备历史统计 | 原生 nlbwmon，按 MAC 汇总；数据库保存到 /etc/nlbwmon，每小时提交 |
 | 全网历史统计 | 原生 vnStat2，安装后选择真实 WAN 设备，避免叠加 WAN/WAN6 重复计数 |
-| 游戏、视频、聊天应用限制 | ImmortalWrt 官方源 OpenAppFilter，包含匹配本次内核编译的 kmod-oaf |
-| 主题 | 官方源 Argon 2.4.7 与配置插件；保留 Bootstrap 备用 |
+| 游戏、视频、聊天应用限制 | 上游 master 的 OpenAppFilter（luci-app-oaf），包含匹配本次内核编译的 kmod-oaf |
+| 主题 | 上游 master 的 Argon 与配置插件；保留 Bootstrap 备用 |
 | 其他 | WOL、UPnP、IPv6、LuCI HTTPS、SFTP、tcpdump、iperf3、dig、QEMU Guest Agent |
 
 不包含 KMS、DDNS-Go、PassWall2、SQM、EQoS、旧 wrtbwmon、ramfree、旧 control-* 插件。不添加设备断网/定时上网插件。Bandix/OAF 本身附带的时间、配额等界面仍按上游保留，但不预设规则。
 
 ## 来源与版本
 
-系统内核、基础树锁定官方 v25.12.2 release；packages/luci 使用官方 openwrt-25.12 维护分支在 2026-11-04 核对的固定提交，其他 feeds 使用 release 自带提交。不是 master/SNAPSHOT，也不修改第三方插件源码强制适配。
+系统内核、基础树及原生 feeds 每次获取 `openwrt-25.12` 的最新维护提交。构建版本可能显示 `25.12-SNAPSHOT`，不代表切换到系统 master。独立插件优先安装上游主分支的配方，并检查实际源码提交及包来源；不修改第三方代码强制适配。
 
-sources.lock.json 固定全部输入。以后升级要主动审阅并修改锁文件，不会在每次构建时自动追最新。
+OpenClash 最新 Alpha 的版本文件、压缩包和官方校验表来自 `core` 分支的同一提交；架构固定为 `linux-amd64-v2`，版本号不固定。获取数据库时重新查询上游最新发布；GeoIP/GeoSite 使用同一次 Release。下载只进行一次，编译使用已校验的本次文件，不因上游滚动发布而在中途换版。上游提供摘要时须匹配该摘要，否则记录实际文件的 SHA256。
 
-Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Meta 使用 OpenClash 官方 core/master/meta 通道的 Alpha amd64-v2，固定到已验证版本的源提交并校验 SHA256，不要求 AVX；PVE 客机需暴露完整的 x86-64-v2 指令集，可采用 x86-64-v2-AES。四份地址/域名/ASN 数据库也按锁文件校验后预装；后续通过 OpenClash 独立更新。
+Bandix 后端沿用作者最新 Makefile 下载并校验的预编译 Rust/eBPF 二进制，本流程不从 Rust 源码重编该二进制。PassWall 的 Xray、sing-box 等使用其依赖仓库最新配方提供的版本，不单独替换二进制。
 
-OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6.1.4；这是官方配套集成，版本号不等于未维护。没有额外切换到上游 7.x 或修改旧版来强制兼容。
+最新 OAF 与旧集成的 LuCI 包名、配置界面不同，采用 `luci-app-oaf`；不沿用旧 `luci-app-appfilter` 的选择项。最新版主题也可能与固定版界面不同。原生 DDNS、ACME 和 LuCI 基础组件继续使用配套维护源。
+
+固定版本的历史锁文件只保留在独立固定版目录。最新版的 `sources.json` 是跟随策略；每次产出的 `build-lock.json` 才是实际输入记录，不写回仓库。
 
 ## 默认行为与试机
 
@@ -58,9 +66,9 @@ OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6
 
 输出 BIOS/UEFI 两种启动方式的 ext4、squashfs 镜像，以及 QCOW2 镜像；根分区 2048 MiB、内核分区 64 MiB。新 VM 建议分配至少 4 GiB 虚拟磁盘、2 GiB 内存。
 
-构建先运行 make defconfig，严格核对显式配置，避免插件依赖不满足时被静默取消。构建成功后再核对包清单、BTF/eBPF/VirtIO 内核选项和镜像完整性，才上传固件及发布 Release。
+构建先检查系统及全部 feeds 的提交、独立插件实际来源，再运行 make defconfig，严格核对显式配置，避免插件依赖不满足时被静默取消。构建成功后再核对包清单、BTF/eBPF/VirtIO 内核选项和镜像完整性，才上传固件及发布 Release。
 
-每次输出带 resolved.config、kernel.config、config.buildinfo、包清单、build-lock.json 和 SHA256SUMS。失败构建保留配置及日志供排查。构建通过不等于实际网络功能已验收。
+每次输出带 resolved.config、kernel.config、config.buildinfo、包清单、sources.json、build-lock.json 和 SHA256SUMS。失败构建保留配置及日志供排查。构建通过不等于实际网络功能已验收。
 
 ### 上游
 

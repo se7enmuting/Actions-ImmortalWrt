@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Fetch the reviewed sources without running the legacy 18.06 DIY scripts."""
+"""Prepare sources exclusively from this run's resolved snapshot."""
+import argparse
 import gzip
 import hashlib
 import json
 from pathlib import Path
 import shutil
 import subprocess
-import sys
 import tarfile
-import urllib.request
 
 RECIPE = Path(__file__).resolve().parents[1]
 
@@ -42,17 +41,30 @@ def checkout(spec, destination):
         raise RuntimeError(f"Source revision mismatch: {destination}")
 
 
+def copy_asset(spec, assets, destination):
+    source = assets / spec["file"]
+    if hashlib.sha256(source.read_bytes()).hexdigest() != spec["sha256"]:
+        raise RuntimeError(f"Resolved asset SHA256 mismatch: {spec['file']}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+
+
 def main():
-    work = Path(sys.argv[1]).resolve()
-    lock = json.loads((RECIPE / "sources.lock.json").read_text(encoding="utf-8"))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("work", type=Path)
+    parser.add_argument("--lock", type=Path, required=True)
+    parser.add_argument("--assets", type=Path, required=True)
+    args = parser.parse_args()
+    work = args.work.resolve()
+    lock = json.loads(args.lock.read_text(encoding="utf-8"))
     checkout(lock["core"], work)
+    # Prefer upstream plugins when resolving dependencies from any feed.
+    ordered = lock["plugin_feeds"] + [name for name in lock["feeds"] if name not in lock["plugin_feeds"]]
     lines = [
-        f"src-git {name} {spec['url']}^{spec['commit']}"
-        for name, spec in lock["feeds"].items()
+        f"src-git {name} {lock['feeds'][name]['url']}^{lock['feeds'][name]['commit']}"
+        for name in ordered
     ]
     (work / "feeds.conf.default").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    checkout(lock["bandix_backend"], work / "package/custom/bandix-backend")
-    checkout(lock["bandix_luci"], work / "package/custom/bandix-luci")
     shutil.copytree(RECIPE / "files", work / "files", dirs_exist_ok=True)
     for f in (work / "files/etc/uci-defaults").iterdir():
         f.chmod(0o755)
@@ -64,21 +76,27 @@ def main():
     if f"set openclash.config.core_version='{mihomo['architecture']}'" not in profile:
         raise RuntimeError("Mihomo archive architecture and first-boot selection differ")
     archive = work / "mihomo.archive"
-    with urllib.request.urlopen(mihomo["url"], timeout=120) as response, archive.open("wb") as out:
-        shutil.copyfileobj(response, out)
+    copy_asset(mihomo, args.assets, archive)
     if hashlib.sha256(archive.read_bytes()).hexdigest() != mihomo["sha256"]:
         raise RuntimeError("Mihomo SHA256 mismatch")
     core = work / "files/etc/openclash/core/clash_meta"
     core.parent.mkdir(parents=True, exist_ok=True)
     unpack_core(archive, core, mihomo.get("archive_format", "gzip"))
     core.chmod(0o755)
+    header = core.read_bytes()[:20]
+    if header[:6] != b"\x7fELF\x02\x01" or header[18:20] != b"\x3e\x00":
+        raise RuntimeError("Mihomo must be a Linux x86_64 ELF binary")
+    banner = subprocess.check_output([str(core), "-v"], text=True).strip()
+    if mihomo["version"] not in banner:
+        raise RuntimeError(f"Mihomo binary version differs from metadata: {banner}")
+    lock["mihomo"]["version_output"] = banner
+    lock["mihomo"]["binary_sha256"] = hashlib.sha256(core.read_bytes()).hexdigest()
     archive.unlink()
     for spec in lock["geodata"]:
         if spec["file"] not in {"Country.mmdb", "GeoIP.dat", "GeoSite.dat", "ASN.mmdb"}:
             raise RuntimeError("Unsupported geodata destination")
         target = work / "files/etc/openclash" / spec["file"]
-        with urllib.request.urlopen(spec["url"], timeout=120) as response, target.open("wb") as out:
-            shutil.copyfileobj(response, out)
+        copy_asset(spec, args.assets, target)
         with target.open("rb") as stream:
             digest = hashlib.file_digest(stream, "sha256").hexdigest()
         if digest != spec["sha256"]:

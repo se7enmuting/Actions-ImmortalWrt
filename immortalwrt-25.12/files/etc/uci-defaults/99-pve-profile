@@ -24,13 +24,15 @@ set dhcp.odhcpd.piodir='/etc/odhcpd-piodir'
 set dhcp.lan.max_preferred_lifetime='2700'
 set dhcp.lan.max_valid_lifetime='5400'
 set passwall.@global[0].enabled='0'
-set appfilter.global.enable='0'
+set fwx.appfilter.enable='0'
+set fwx.macfilter.enable='0'
+set macfilter.global.enable='0'
 set upnpd.config.enabled='0'
 EOF
 mkdir -p /etc/nlbwmon
 mkdir -p /etc/odhcpd-piodir
 chmod 700 /etc/odhcpd-piodir
-for config in system luci firewall bandix nlbwmon openclash passwall appfilter upnpd dhcp; do
+for config in system luci firewall bandix nlbwmon openclash passwall fwx macfilter upnpd dhcp; do
     uci -q commit "$config"
 done
 # Monitor is available immediately; interception/filtering requires local setup.

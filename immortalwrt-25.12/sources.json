@@ -1,0 +1,75 @@
+{
+  "core": {
+    "url": "https://github.com/immortalwrt/immortalwrt.git",
+    "ref": "openwrt-25.12"
+  },
+  "plugins": {
+    "passwall_packages": {
+      "url": "https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git",
+      "ref": "main"
+    },
+    "passwall": {
+      "url": "https://github.com/Openwrt-Passwall/openwrt-passwall.git",
+      "ref": "main"
+    },
+    "openclash": {
+      "url": "https://github.com/vernesong/OpenClash.git",
+      "ref": "master"
+    },
+    "bandix_backend": {
+      "url": "https://github.com/timsaya/openwrt-bandix.git",
+      "ref": "main"
+    },
+    "bandix_luci": {
+      "url": "https://github.com/timsaya/luci-app-bandix.git",
+      "ref": "main"
+    },
+    "luci-theme-argon": {
+      "url": "https://github.com/jerrykuku/luci-theme-argon.git",
+      "ref": "master"
+    },
+    "luci-app-argon-config": {
+      "url": "https://github.com/jerrykuku/luci-app-argon-config.git",
+      "ref": "master"
+    },
+    "oaf": {
+      "url": "https://github.com/destan19/OpenAppFilter.git",
+      "ref": "master"
+    }
+  },
+  "mihomo": {
+    "repo": "vernesong/OpenClash",
+    "ref": "core",
+    "channel": "alpha",
+    "architecture": "linux-amd64-v2",
+    "path": "master/meta/clash-linux-amd64-v2.tar.gz",
+    "version_path": "master/core_version",
+    "checksums_path": "master/meta/checksums.txt"
+  },
+  "geodata": [
+    {
+      "file": "Country.mmdb",
+      "repo": "alecthw/mmdb_china_ip_list",
+      "ref": "release",
+      "path": "lite/Country.mmdb"
+    },
+    {
+      "file": "GeoIP.dat",
+      "repo": "Loyalsoldier/v2ray-rules-dat",
+      "release": "latest",
+      "asset": "geoip.dat"
+    },
+    {
+      "file": "GeoSite.dat",
+      "repo": "Loyalsoldier/v2ray-rules-dat",
+      "release": "latest",
+      "asset": "geosite.dat"
+    },
+    {
+      "file": "ASN.mmdb",
+      "repo": "xishang0128/geoip",
+      "release": "tag:latest",
+      "asset": "GeoLite2-ASN.mmdb"
+    }
+  ]
+}

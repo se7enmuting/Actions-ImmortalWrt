@@ -4,7 +4,7 @@
 
 ## 原生 ACME 自动续签
 
-预装 `acme-common`、`acme-acmesh`、`acme-acmesh-dnsapi`、`luci-app-acme` 和中文翻译。当前固定 feeds 对应 acme.sh 3.1.3-r3。首次启动保持 ACME 关闭，配置后再启用。
+预装 `acme-common`、`acme-acmesh`、`acme-acmesh-dnsapi`、`luci-app-acme` 和中文翻译。最新版每次使用 25.12 维护 feeds 对应的 acme.sh；具体版本见产物包清单。首次启动保持 ACME 关闭，配置后再启用。
 
 1. 在 LuCI 的 ACME 页面填写真实账户邮箱；官方组件要求 `account_email`。
 2. 添加证书，首域名如 `example.net`，另加 `*.example.net`；选择 DNS 验证、`dns_tencent`、`ec256`、Let's Encrypt，关闭测试环境。可设置 `dns_wait=120` 等待传播。
@@ -22,15 +22,15 @@
 
 DDNS 使用 `dnspod.cn-v3`：用户名为 SecretId，密码为 SecretKey；域名格式为 `主机名@主域名`。启用 HTTPS 和正常 CA 校验，可使用 `/etc/ssl/certs/ca-certificates.crt`。
 
-当前固定版本的 `ddns-scripts-dnspod-v3` 不要额外填写可选 `record_id`。实测指定该字段会跳过记录查询，后续缺少线路等参数并出现 `InvalidParameter`/无效 JSON。留空可走原生查询、更新流程。配置前确认同名、同类型记录及线路没有歧义，配置后核对 API 实际记录值。没有修改上游脚本强制兼容。
+2026-11-05 已验证版本的 `ddns-scripts-dnspod-v3` 不要额外填写可选 `record_id`。实测指定该字段会跳过记录查询，后续缺少线路等参数并出现 `InvalidParameter`/无效 JSON。留空可走原生查询、更新流程。配置前确认同名、同类型记录及线路没有歧义，配置后核对 API 实际记录值。没有修改上游脚本强制兼容。
 
 ## OpenClash 内核和数据库
 
-固件嵌入 OpenClash 官方 Meta Alpha 通道的 amd64-v2，保持 `core_type=Meta`、`core_version=linux-amd64-v2`。当前锁定现网已验证的 `alpha-gbc76c13`，压缩包来自 `core` 分支的固定提交，版本、架构和 SHA256 一同记录；不再默认使用 Mihomo 稳定版。后续追踪新的 Alpha 时更新锁文件并核验兼容性，不能仅修改版本号或跳过校验。
+固件嵌入 OpenClash 官方 Meta Alpha 通道的 amd64-v2，保持 `core_type=Meta`、`core_version=linux-amd64-v2`。最新版每次从官方 `core` 分支的当前提交解析最新 Alpha、压缩包和官方 SHA256；版本不再固定为 `alpha-gbc76c13`。版本、架构、提交和校验值随产物记录在 `build-lock.json`。固定版流程仍保留原有已验证基线。
 
 PVE 客机需要实际获得完整的 x86-64-v2 指令集，不能只看宿主机型号。可采用 `x86-64-v2-AES` 或经核实的其他 CPU 类型；`host` 并非必须。更改虚拟 CPU 类型通常需要关机再启动。仅更换同版本的 v1/v2 时，OpenClash 更新页面可能因只比较版本号而跳过下载，需另行核对二进制架构。编译版本标题旁的固定星号不是更新或失败状态。
 
-Country.mmdb、GeoIP.dat、GeoSite.dat、ASN.mmdb 也预装经过 SHA256 校验的基线，首次启动不必先借助代理下载这些数据库。数据库来源和摘要记录在 `sources.lock.json`，它们不是每次构建自动追最新。ASN 发布地址为上游滚动标签，内容变化时校验会失败，需要审阅并更新锁文件，不能跳过校验。
+Country.mmdb、GeoIP.dat、GeoSite.dat、ASN.mmdb 每次构建重新获取最新来源并预装，首次启动不必先借助代理下载。GeoIP/GeoSite 使用同一次最新 Release；ASN 跟随滚动 latest 发布。文件摘要随每次运行生成，不沿用旧版 SHA256；上游提供摘要时必须校验一致。实际构建使用已下载、已记录的本次文件，不会中途重新获取滚动地址。安装后的数据库更新与固件构建相互独立。
 
 安装后可使用 OpenClash 原生更新功能更新数据库及大陆 IPv4/IPv6 地址列表。先备份、检查配置兼容性，再重启并核对策略组选择、DNS 与客户端连接。内核升级与数据库更新互相独立。
 
@@ -58,10 +58,12 @@ Fake-IP 模式下部分域名的 AAAA 响应可能为空，`curl -6 域名` 的 
 
 ## 临时内核防护
 
-此构建保留与上线环境一致的 `90-cve-2026-98432.nft`，提前丢弃带 IPv4 Options 的入站 TCP 包。它不是内核修复，也不代表 release 内核已含补丁；锁定的系统源码未在本次修改中升级。确认证实修复的新内核后再审阅并移除该临时规则。
+此构建保留与上线环境一致的 `90-cve-2026-98432.nft`，提前丢弃带 IPv4 Options 的入站 TCP 包。它不是内核修复，也不代表 release 内核已含补丁；最新版跟随 25.12 维护分支，不因保留这条临时规则而固定系统源码。确认证实修复的新内核后再审阅并移除该临时规则。
 
 ## 本次验收与边界
 
 2026-11-05 的现场迁移验证了 WAN 拨号、IPv4、路由器及客户端 IPv6 HTTPS、代理站点访问、52 个策略组选择保留、DNSPod API v3 实际更新和 ACME 真实签发/部署/续签跳过。
+
+上述现场验收基于当时的固定版本；最新版每次升级后需要重新核对。
 
 这些是现场配置的验证结果，不等于每份新构建或任意网络环境均已验收。固定限速、应用识别拦截、全部端口转发、流量统计口径仍需在各设备及实际流量上分别验证。仓库不分发带个人地址或站点凭据的切换工具。
