@@ -1,0 +1,3 @@
+#!/bin/sh
+# Also applies to EC defaults retained from an earlier firmware.
+sh /usr/libexec/pve-normalize-uhttpd

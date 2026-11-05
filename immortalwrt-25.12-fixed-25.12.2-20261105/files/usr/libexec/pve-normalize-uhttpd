@@ -1,0 +1,20 @@
+#!/bin/sh
+# Normalize the unused RSA-size field in EC defaults for LuCI's min(1024).
+# Keep the selected algorithm, curve, installed certificate and HTTPS settings.
+. /lib/functions.sh
+
+changed=0
+failed=0
+normalize_ec_bits() {
+    local section="$1" key_type bits
+    config_get key_type "$section" key_type
+    config_get bits "$section" bits
+    [ "$key_type" = "ec" ] && [ "$bits" = "256" ] || return 0
+    uci -q set "uhttpd.$section.bits=2048" || { failed=1; return 1; }
+    changed=1
+}
+
+config_load uhttpd || exit 1
+config_foreach normalize_ec_bits cert
+[ "$failed" = 0 ] || exit 1
+[ "$changed" = 0 ] || uci -q commit uhttpd

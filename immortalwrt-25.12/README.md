@@ -61,6 +61,7 @@ Bandix 后端沿用作者最新 Makefile 下载并校验的预编译 Rust/eBPF �
 - vnStat2 必须在 LuCI 里指定实际出口接口。PPPoE、VLAN、多 LAN、双栈及代理流量的计数口径均需在现场验证。多个统计插件的数字不能直接相加。
 - 在独立 PVE VM 上启动，接隔离网络，避免默认 LAN 地址/DHCP 与现网冲突。输出并不自动安装到现有 VM。
 - 优先测试设备 IPv4/IPv6 归并、直连与代理计数、上下行限速、指定应用阻断、CPU/内存及历史数据重启保留情况。应用过滤尤其需要分别测试直连、QUIC、代理及双栈场景。
+- uHTTPd 的 EC 默认参数 `bits=256` 会有条件归一为 2048，以通过原生页面校验；保留算法、曲线与已有证书，迁入旧配置后的执行方式见 [操作说明](OPERATIONS.md#uhttpd-的-ec-参数与页面校验)。
 - SSH 沿用官方 LAN 绑定与 WAN 默认拒绝策略；需要公网 IPv6 SSH 时，分别配置监听和 WAN 入站规则，见 [IPv6 SSH 说明](OPERATIONS.md#ipv6-ssh-监听与-wan-放行)。不能只确认 DDNS 的 AAAA 正确。
 - 不整包恢复 18.06 配置。网络接口顺序、WAN/LAN、拨号、DNS 与 IPv6 配置需重新核对。
 
