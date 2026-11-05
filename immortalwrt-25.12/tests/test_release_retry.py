@@ -15,7 +15,12 @@ WORKFLOWS = sorted((ROOT / ".github/workflows").glob("build-immortalwrt-*.yml"))
 def step_script(text, name):
     step = text.split("      - name: " + name + "\n", 1)[1].split("\n      - name:", 1)[0]
     script = step.split("        run: |\n", 1)[1]
-    return "\n".join(line[10:] if line.startswith("          ") else line for line in script.splitlines())
+    lines = []
+    for line in script.splitlines():
+        if line.strip() and not line.startswith("          "):
+            break
+        lines.append(line[10:] if line.startswith("          ") else "")
+    return "\n".join(lines)
 
 
 class ReleaseRetry(unittest.TestCase):
@@ -38,6 +43,8 @@ case "$1 $2" in
   'release create')
     test ! -e draft
     [[ " $* " == *" --draft "* ]]
+    [[ " $* " == *" --verify-tag "* ]]
+    [[ " $* " != *" --target "* ]]
     touch draft ;;
   'release upload')
     [[ " $* " == *" --clobber "* ]]
@@ -71,6 +78,35 @@ esac
                 release_job = text.split("  release:\n", 1)[1]
                 self.assertIn("name: ${{ needs.build.outputs.firmware_artifact }}", release_job)
                 self.assertIn("BUILD_ATTEMPT: ${{ needs.build.outputs.build_attempt }}", release_job)
+
+    def test_tag_permission_and_target_checks_run_before_compilation(self):
+        for workflow in WORKFLOWS:
+            for status, succeeds, creates in [("missing", True, True), ("existing", True, False),
+                                               ("different", False, False), ("denied", False, False)]:
+                with self.subTest(workflow=workflow.name, status=status), tempfile.TemporaryDirectory() as directory:
+                    work = Path(directory)
+                    (work / "bin").mkdir()
+                    stub = work / "bin/gh"
+                    stub.write_text("""#!/bin/bash
+set -eu
+if [[ " $* " == *" --method POST "* ]]; then touch created; echo '{}'; exit 0; fi
+case "$TAG_TEST_STATUS" in
+ missing) echo 'HTTP 404' >&2; exit 1 ;;
+ existing) echo "$SOURCE_COMMIT" ;;
+ different) echo wrong-commit ;;
+ denied) echo 'HTTP 403: Resource not accessible by integration' >&2; exit 1 ;;
+esac
+""", newline="\n")
+                    stub.chmod(0o755)
+                    text = workflow.read_text(encoding="utf-8")
+                    (work / "reserve.sh").write_text(step_script(text, "Reserve tag for the exact build commit before compilation"), newline="\n")
+                    env = {**os.environ, "TAG_TEST_STATUS": status, "SOURCE_COMMIT": "a" * 40,
+                           "GH_REPO": "example/repo", "TAG": "test-tag"}
+                    result = subprocess.run([BASH, "-c", 'export PATH="$PWD/bin:$PATH"; bash reserve.sh'],
+                                            cwd=work, env=env, capture_output=True, timeout=15)
+                    self.assertEqual(result.returncode == 0, succeeds, result.stderr.decode(errors="replace"))
+                    self.assertEqual((work / "created").exists(), creates)
+                    self.assertIn("needs: reserve_release_tag", text)
 
     def test_download_corruption_blocks_publication(self):
         for workflow in WORKFLOWS:

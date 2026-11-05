@@ -30,7 +30,36 @@ env:
   FORCE_UNSAFE_CONFIGURE: "1"
 
 jobs:
+  reserve_release_tag:
+    if: inputs.operation == 'build' && inputs.publish_release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Reserve tag for the exact build commit before compilation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+          TAG: immortalwrt-fixed-25.12.2-20261105-pve-${{ github.run_number }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          if existing=$(gh api "repos/$GH_REPO/git/ref/tags/$TAG" --jq .object.sha 2>tag-error.log); then
+            if [[ "$existing" != "$SOURCE_COMMIT" ]]; then
+              echo "Release tag points to a different commit; refusing to overwrite."
+              exit 1
+            fi
+          elif grep -q 'HTTP 404' tag-error.log; then
+            gh api --method POST "repos/$GH_REPO/git/refs" \
+              -f "ref=refs/tags/$TAG" -f "sha=$SOURCE_COMMIT" >/dev/null
+          else
+            cat tag-error.log >&2
+            exit 1
+          fi
+
   build:
+    needs: reserve_release_tag
+    if: ${{ !cancelled() && (needs.reserve_release_tag.result == 'success' || needs.reserve_release_tag.result == 'skipped') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 350
     outputs:
@@ -39,6 +68,21 @@ jobs:
     steps:
       - name: Checkout build recipe
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Verify this attempt has a reserved publication tag
+        if: inputs.operation == 'build' && inputs.publish_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+          TAG: immortalwrt-fixed-25.12.2-20261105-pve-${{ github.run_number }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          if ! actual=$(gh api "repos/$GH_REPO/git/ref/tags/$TAG" --jq .object.sha); then
+            echo "Publication tag was not reserved for this attempt. Use Re-run all jobs when retrying build; retrying release alone reuses its original build tag."
+            exit 1
+          fi
+          [[ "$actual" == "$SOURCE_COMMIT" ]]
 
       - name: Prepare hosted runner
         run: |
@@ -196,8 +240,7 @@ jobs:
           set -euo pipefail
           tag="immortalwrt-fixed-25.12.2-20261105-pve-$BUILD_NUMBER-$BUILD_ATTEMPT"
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --draft \
-              --target "$SOURCE_COMMIT" \
+            gh release create "$tag" --draft --verify-tag \
               --title "ImmortalWrt 25.12.2 Fixed 20261105 Sec1 PVE · $BUILD_NUMBER-$BUILD_ATTEMPT" \
               --notes-file firmware/BUILD-INFO.md \
               --latest=false
