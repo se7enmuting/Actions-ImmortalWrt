@@ -1,6 +1,6 @@
 # ImmortalWrt 25.12.2 · 固定版 20261105
 
-> 本目录保留 2026-11-05 的锁定版本，并补上应用过滤后台的启动遗漏；其余版本不升级。需要每次追新时使用[最新版流程](../README.md)。固定版的 ASN 地址仍为上游滚动链接：若内容变化会因原 SHA256 不匹配而停止，不会自动更新或跳过校验。
+> 本目录保留 2026-11-05 的锁定版本，并补上服务启动与 uHTTPd 参数兼容修正、回移明确的 Fullcone 内核修复；基础版本保持 25.12.2。需要每次追新时使用[最新版流程](../README.md)。固定版的 ASN 地址仍为上游滚动链接：若内容变化会因原 SHA256 不匹配而停止，不会自动更新或跳过校验。
 
 适用于 g-pve / b-pve 下的 x86_64 路由虚拟机。两地共用固件，网络、密码、订阅及 DDNS 凭据在安装后分别配置。
 
@@ -22,23 +22,26 @@
 | 动态 DNS | 原生 luci-app-ddns；Cloudflare、DNSPod 腾讯云 API v3，HTTPS 与 CA 证书 |
 | 证书自动续签 | 官方 acme.sh 3.1.3-r3、DNS API 模块、原生中文 LuCI 页面 |
 | 设备流量与固定上下行限速 | Bandix 0.12.12（LuCI 0.12.12-r5），在设备规则里配置全天生效的上下行速率 |
-| 设备历史统计 | 原生 nlbwmon，按 MAC 汇总；数据库保存到 /etc/nlbwmon，每小时提交 |
-| 全网历史统计 | 原生 vnStat2，安装后选择真实 WAN 设备，避免叠加 WAN/WAN6 重复计数 |
+| 设备历史统计 | nlbwmon，按 MAC 汇总；数据库保存到 /etc/nlbwmon，每小时提交；Fullcone 连接事件修复见下文 |
 | 游戏、视频、聊天应用限制 | ImmortalWrt 官方源 OpenAppFilter，包含匹配本次内核编译的 kmod-oaf |
 | 主题 | 官方源 Argon 2.4.7 与配置插件；保留 Bootstrap 备用 |
 | 其他 | WOL、UPnP、IPv6、LuCI HTTPS、SFTP、tcpdump、iperf3、dig、QEMU Guest Agent |
 
-不包含 KMS、DDNS-Go、PassWall2、SQM、EQoS、旧 wrtbwmon、ramfree、旧 control-* 插件。不添加设备断网/定时上网插件。Bandix/OAF 本身附带的时间、配额等界面仍按上游保留，但不预设规则。
+不包含 vnStat/vnStat2、KMS、DDNS-Go、PassWall2、SQM、EQoS、旧 wrtbwmon、ramfree、旧 control-* 插件。不添加设备断网/定时上网插件。Bandix/OAF 本身附带的时间、配额等界面仍按上游保留，但不预设规则。
 
 ## 来源与版本
 
 系统内核、基础树锁定官方 v25.12.2 release；packages/luci 使用官方 openwrt-25.12 维护分支在 2026-11-04 核对的固定提交，其他 feeds 使用 release 自带提交。不是 master/SNAPSHOT，也不修改第三方插件源码强制适配。
 
-sources.lock.json 固定全部输入。以后升级要主动审阅并修改锁文件，不会在每次构建时自动追最新。
+sources.lock.json 固定源码、资产及额外回移补丁。以后升级要主动审阅并修改锁文件，不会在每次构建时自动追最新。
 
 Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Meta 使用 OpenClash 官方 core/master/meta 通道的 Alpha amd64-v2，固定到已验证版本的源提交并校验 SHA256，不要求 AVX；PVE 客机需暴露完整的 x86-64-v2 指令集，可采用 x86-64-v2-AES。四份地址/域名/ASN 数据库也按锁文件校验后预装；后续通过 OpenClash 独立更新。
 
 OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6.1.4；这是官方配套集成，版本号不等于未维护。没有额外切换到上游 7.x 或修改旧版来强制兼容。
+
+### nlbwmon 修复与 vnStat 移除
+
+vnStat/vnStat2 页面、翻译与后台已从本配方移除，保留 Bandix 和 nlbwmon。固定版回移官方 `ae5a064` 的 Linux 6.12 连接事件链修复，最新版使用维护分支已有修复；构建后检查实际内核选项，不能只凭服务运行判定采集正常。详见 [修复和验收说明](OPERATIONS.md#nlbwmon-与-fullcone-的连接事件修复)。
 
 ## 默认行为与试机
 
@@ -52,7 +55,6 @@ OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6
 - ACME 首次签发、凭据填写、uHTTPd 自动重载、DNSPod 参数注意事项及离线迁移经验见 [OPERATIONS.md](OPERATIONS.md)。
 - 包含与已上线环境一致的临时入站 TCP/IPv4 Options 过滤；这不代表基础内核已修复，详见操作说明。
 - 单设备固定限速由 Bandix 的设备上下行规则承担；这是流量限速，不是 SQM 队列公平调度。无需额外安装仅支持 IPv4 的 EQoS。
-- vnStat2 必须在 LuCI 里指定实际出口接口。PPPoE、VLAN、多 LAN、双栈及代理流量的计数口径均需在现场验证。多个统计插件的数字不能直接相加。
 - 在独立 PVE VM 上启动，接隔离网络，避免默认 LAN 地址/DHCP 与现网冲突。输出并不自动安装到现有 VM。
 - 优先测试设备 IPv4/IPv6 归并、直连与代理计数、上下行限速、指定应用阻断、CPU/内存及历史数据重启保留情况。应用过滤尤其需要分别测试直连、QUIC、代理及双栈场景。
 - uHTTPd 的 EC 默认参数 `bits=256` 会有条件归一为 2048，以通过原生页面校验；保留算法、曲线与已有证书，迁入旧配置后的执行方式见 [操作说明](OPERATIONS.md#uhttpd-的-ec-参数与页面校验)。

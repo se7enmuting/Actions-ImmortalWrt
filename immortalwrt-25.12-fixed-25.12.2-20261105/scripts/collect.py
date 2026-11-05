@@ -14,7 +14,7 @@ REQUIRED_PACKAGES = {
     "luci-app-openclash", "luci-app-passwall", "xray-core", "sing-box",
     "luci-app-ddns", "ddns-scripts-cloudflare", "ddns-scripts-dnspod-v3",
     "luci-app-bandix", "bandix", "luci-app-appfilter", "appfilter", "kmod-oaf",
-    "luci-app-nlbwmon", "luci-app-vnstat2", "luci-theme-argon",
+    "luci-app-nlbwmon", "kmod-nft-fullcone", "luci-theme-argon",
     "qemu-ga", "miniupnpd-nftables", "luci-app-wol",
     "acme-common", "acme-acmesh", "acme-acmesh-dnsapi", "luci-app-acme",
     "luci-i18n-acme-zh-cn", "openssl-util", "dnsmasq-full", "bash", "curl",
@@ -22,9 +22,11 @@ REQUIRED_PACKAGES = {
 }
 FORBIDDEN_PACKAGES = {
     "luci-app-passwall2", "luci-app-ddns-go", "ddns-go", "luci-app-vlmcsd",
+    "luci-app-vnstat2", "luci-i18n-vnstat2-zh-cn", "vnstat2", "vnstati2",
     "vlmcsd", "luci-app-sqm", "sqm-scripts", "luci-app-eqos", "luci-app-wrtbwmon",
 }
 KERNEL_FEATURES = {
+    "CONFIG_NF_CONNTRACK_EVENTS", "CONFIG_NF_CONNTRACK_CHAIN_EVENTS",
     "CONFIG_BPF", "CONFIG_BPF_SYSCALL", "CONFIG_BPF_JIT",
     "CONFIG_DEBUG_INFO_BTF", "CONFIG_NET_CLS_BPF", "CONFIG_NET_ACT_BPF",
     "CONFIG_VIRTIO_NET", "CONFIG_VIRTIO_BLK", "CONFIG_SCSI_VIRTIO",
@@ -49,7 +51,7 @@ def validate(work):
     kernel = read_config(kernels[0])
     missing = {key for key in KERNEL_FEATURES if kernel.get(key) not in {"y", "m"}}
     if missing:
-        raise RuntimeError(f"Missing Bandix/PVE kernel features: {sorted(missing)}")
+        raise RuntimeError(f"Missing required kernel features: {sorted(missing)}")
     # All four boot/filesystem combinations must exist.
     for fs in ("ext4", "squashfs"):
         for suffix in ("combined.img.gz", "combined-efi.img.gz"):
@@ -92,14 +94,15 @@ def main():
         f"# ImmortalWrt {lock['release']} PVE\n\n"
         f"- Recipe commit: {os.getenv('GITHUB_SHA', 'local')}\n"
         f"- Official release source: {lock['core']['commit']}\n"
+        f"- Reviewed upstream backports: {', '.join(item['upstream_commit'] for item in lock['patches'])}\n"
         f"- Build: {os.getenv('GITHUB_RUN_NUMBER', 'local')}/{os.getenv('GITHUB_RUN_ATTEMPT', '1')}\n"
         f"- Mihomo: {lock['mihomo']['version']} ({lock['mihomo']['architecture']}, SHA256 checked)\n"
         f"- Bandix UI: {lock['bandix_luci']['release']}; backend uses upstream checksummed binary.\n"
         "- Official feeds: 25.12 maintenance revisions recorded in build-lock.json.\n"
         "- Package inclusion and Bandix/PVE kernel checks: passed.\n\n"
         "Packages: OpenClash, PassWall (Xray + sing-box), native DDNS, Bandix,\n"
-        "OpenAppFilter, nlbwmon, vnStat2, Argon, native ACME DNS API, WOL, UPnP and qemu-ga.\n\n"
-        "No KMS, DDNS-Go, PassWall2, SQM, old wrtbwmon or EQoS.\n\n"
+        "OpenAppFilter, nlbwmon, Argon, native ACME DNS API, WOL, UPnP and qemu-ga.\n\n"
+        "No vnStat, KMS, DDNS-Go, PassWall2, SQM, old wrtbwmon or EQoS.\n\n"
         "This is a custom build from an official release, not an official binary.\n"
         "Runtime compatibility and traffic accounting are NOT established by build success.\n"
         "Use an isolated PVE test VM first. Read README.zh-CN.md before installation.\n"

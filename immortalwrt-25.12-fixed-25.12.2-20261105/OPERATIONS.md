@@ -82,7 +82,7 @@ Fake-IP 模式下部分域名的 AAAA 响应可能为空，`curl -6 域名` 的 
 
 OpenClash、PassWall 保留原生服务开机启动入口，但 `openclash.config.enable=0`、`passwall.@global[0].enabled=0`，首次安装不自动开启代理，也不在首次初始化中启动代理。以后在原生页面配置并开启，保存的主开关会在重启后继续生效。不能再以禁用 init 自启来实现“代理默认关闭”，否则页面启动可能仅对当前开机有效。
 
-DDNS 原生页面的 Start DDNS 会同时启用自启并启动服务；ACME 的原生启用、首次签发和续签 cron 仍按本文前述步骤执行。它们需要账户或域名配置，不因本次启动修正提前启用。Bandix、nlbwmon、QEMU Guest Agent 保留自启；vnStat 需先选实际统计接口。WOL 与 Argon 不需要单独的常驻后台。
+DDNS 原生页面的 Start DDNS 会同时启用自启并启动服务；ACME 的原生启用、首次签发和续签 cron 仍按本文前述步骤执行。它们需要账户或域名配置，不因本次启动修正提前启用。Bandix、nlbwmon、QEMU Guest Agent 保留自启。WOL 与 Argon 不需要单独的常驻后台。
 
 ## IPv6 SSH 监听与 WAN 放行
 
@@ -110,3 +110,13 @@ DDNS 原生页面的 Start DDNS 会同时启用自启并启动服务；ACME 的�
 两套构建在首次启动或升级后执行 `98-uhttpd-cert-params`：只对 `cert` 类型配置中同时满足 `key_type=ec`、`bits=256` 的条目，将 `bits` 归一为 2048。其他值与 RSA 配置保持原样；不改变 EC 算法、曲线、证书或私钥路径，不删除或重新生成证书，也不重启 uHTTPd。
 
 迁入旧的 uHTTPd 配置后，可运行 `sh /usr/libexec/pve-normalize-uhttpd` 再做配置验收；脚本可重复执行，没有匹配项时不写配置。已运行的旧固件不因仓库更新而自动修正。若在原生页面手工处理，将该字段改为 2048 并保存即可，保留证书路径，不点击“删除旧证书和密钥”。这不会把已有 P-256 证书改成 RSA 2048。
+
+## nlbwmon 与 Fullcone 的连接事件修复
+
+已移除 vnStat 的 LuCI 页面、翻译、后台及绘图程序；保留 Bandix 与 nlbwmon。采集机制不同，不把两者数字直接相加。
+
+现场旧固件的 nlbwmon 服务、统计网段和连接计数均正常，但独立 `conntrack -E` 同样收不到新连接事件，数据库为空；现象指向 Fullcone 与连接事件通知的内核冲突。仅更新 nlbwmon 包或修改首次启动参数不能替代内核修复。
+
+固定版保持 v25.12.2 的基础提交，额外回移 [官方 ae5a064 修复](https://github.com/immortalwrt/immortalwrt/commit/ae5a064f132b6476d1094fbb7fe2066db272c7d4) 的 Linux 6.12 部分，补丁文件及 SHA256 记录在 `sources.lock.json`，构建前校验后应用，产物 `build-lock.json` 保留记录。最新版由 25.12 维护分支提供对应修复，不重复打固定版补丁。两套产物都要求 `CONFIG_NF_CONNTRACK_EVENTS=y`、`CONFIG_NF_CONNTRACK_CHAIN_EVENTS=y`，并核对 Fullcone 与 nlbwmon 包。
+
+本次验证了回移补丁适用于固定源码，以及 Linux 6.12.103 的相关前置补丁上下文；这不等于已完成内核编译或实机验收。安装新固件后，要验证新连接事件、nlbwmon 实际记录、双栈统计及数据库重启保留；过去未采集的流量不能补回。固定版属于带明确内核回移的自定义固件，内核模块应使用同次构建的配套产物。

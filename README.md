@@ -7,7 +7,7 @@
 | 流程 | 运行入口 | 更新行为 |
 |---|---|---|
 | **Latest 25.12（默认使用）** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-latest.yml) | 每次运行获取 25.12 维护分支、独立插件主分支、Meta Alpha 和数据库的最新版本 |
-| **Fixed 25.12.2 / 20261105** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-fixed-25.12.2-20261105.yml) | 保留 2026-11-05 的锁定版本，包含服务启动修正，用于构建旧版本基线 |
+| **Fixed 25.12.2 / 20261105** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-fixed-25.12.2-20261105.yml) | 保留 2026-11-05 的锁定版本，包含服务启动修正及 Fullcone 连接事件修复回移，基础版本保持 25.12.2 |
 
 进入对应 Actions 页面 → **Run workflow** → 选择 main → operation 选择 **build**。默认上传 Artifact，并发布独立 Release，保留以前的 Release。
 
@@ -45,14 +45,14 @@
 |---|---|
 | 平台 | x86_64，PVE/KVM，BIOS/UEFI，ext4/squashfs，QCOW2 |
 | 代理 | OpenClash＋Meta Alpha amd64-v2、PassWall（Xray＋sing-box） |
-| 流量及限速 | Bandix、nlbwmon、vnStat2，支持配置设备上下行限速 |
+| 流量及限速 | Bandix、nlbwmon，支持配置设备上下行限速 |
 | 应用识别限制 | OpenAppFilter；最新版采用上游新版 `luci-app-oaf` |
 | 动态 DNS | 原生 LuCI 动态 DNS，Cloudflare、DNSPod API v3 |
 | 证书续签 | 原生 ACME、acme.sh DNS API、中文管理页面；配置后自动续签 |
 | 界面及其他 | Argon、简体中文、WOL、UPnP、QEMU Guest Agent |
-| 排除 | KMS、DDNS-Go、PassWall2、SQM、旧 wrtbwmon 和旧管控插件 |
+| 排除 | vnStat/vnStat2、KMS、DDNS-Go、PassWall2、SQM、旧 wrtbwmon 和旧管控插件 |
 
-两套流程均默认启动应用过滤后台，开启应用过滤与应用记录，不预设应用屏蔽规则；首次启动通过原生服务初始化特征库，避免仅有驱动而后台未运行导致页面一直等待、设置无法保存。固定版保留软件版本，同步补上服务启动遗漏。
+两套流程均默认启动应用过滤后台，开启应用过滤与应用记录，不预设应用屏蔽规则；首次启动通过原生服务初始化特征库，避免仅有驱动而后台未运行导致页面一直等待、设置无法保存。固定版保留基础版本，同步补上服务启动遗漏，并回移官方 Fullcone 连接事件修复；nlbwmon 保留，vnStat 已移除。
 
 | 服务 | 默认状态与启用方式 |
 |---|---|
@@ -61,7 +61,6 @@
 | UPnP | 功能开关关闭，保留自启和配置触发链；以后由原生页面开启 |
 | DDNS、ACME | 配置后启用；DDNS 页面 Start DDNS 会开启自启，ACME 按操作说明启用和签发 |
 | Bandix、nlbwmon、QEMU Guest Agent | 后台自启 |
-| vnStat2 | 原生服务自启，需在页面选择真实 WAN 接口后统计 |
 | WOL、Argon | 无独立常驻后台 |
 
 GitHub Actions 工具仍固定经过选择的稳定提交；它们是构建工具，不是固件组件。

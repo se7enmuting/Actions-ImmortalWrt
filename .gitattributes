@@ -3,3 +3,6 @@ immortalwrt-*/** text eol=lf
 README.md text eol=lf
 LICENSE text eol=lf
 .gitattributes text eol=lf
+
+# Preserve nested upstream diff context, including its significant whitespace.
+immortalwrt-25.12-fixed-25.12.2-20261105/patches/*.patch -whitespace

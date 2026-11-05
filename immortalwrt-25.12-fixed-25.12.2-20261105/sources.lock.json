@@ -66,5 +66,14 @@
       "url": "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb",
       "sha256": "3169b9ea7dad762f6837b95408dadc1173f47be33be2d83b6c90e67a57a7eb2e"
     }
+  ],
+  "patches": [
+    {
+      "file": "patches/ae5a064-conntrack-events-6.12.patch",
+      "sha256": "97ac7b21340f1f33f3310473723970ebeaa854125610831af4809458b80f1f6a",
+      "upstream_commit": "ae5a064f132b6476d1094fbb7fe2066db272c7d4",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/ae5a064f132b6476d1094fbb7fe2066db272c7d4",
+      "scope": "Linux 6.12 conntrack notifier chains (6.18 changes excluded)"
+    }
   ]
 }

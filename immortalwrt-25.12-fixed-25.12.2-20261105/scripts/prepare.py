@@ -42,10 +42,21 @@ def checkout(spec, destination):
         raise RuntimeError(f"Source revision mismatch: {destination}")
 
 
+def apply_backports(work, lock):
+    for spec in lock["patches"]:
+        patch = RECIPE / spec["file"]
+        if hashlib.sha256(patch.read_bytes()).hexdigest() != spec["sha256"]:
+            raise RuntimeError(f"Backport SHA256 mismatch: {spec['file']}")
+        subprocess.run(["git", "apply", "--check", "--whitespace=nowarn", str(patch)], cwd=work, check=True)
+        subprocess.run(["git", "apply", "--whitespace=nowarn", str(patch)], cwd=work, check=True)
+        print(f"Applied reviewed upstream backport: {spec['upstream_commit']}")
+
+
 def main():
     work = Path(sys.argv[1]).resolve()
     lock = json.loads((RECIPE / "sources.lock.json").read_text(encoding="utf-8"))
     checkout(lock["core"], work)
+    apply_backports(work, lock)
     lines = [
         f"src-git {name} {spec['url']}^{spec['commit']}"
         for name, spec in lock["feeds"].items()
