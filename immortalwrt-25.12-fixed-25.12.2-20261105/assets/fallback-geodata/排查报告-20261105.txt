@@ -1,0 +1,39 @@
+历史排查记录；后续已接入的策略以 ../../DATA-POLICY.md 和 geodata.policy.json 为准。
+
+固定版外部数据与兼容性排查（2026-11-05）
+
+范围：当前固定配方、锁定的官方 packages/luci 配方与脚本、此前成功固定版的实际 .config。未扫描现网设备的私有订阅及自定义 Rule Provider。
+
+一、已下载的托底候选
+20261105/Country.mmdb、GeoIP.dat、GeoSite.dat、ASN.mmdb 及 manifest.json。
+GeoIP/GeoSite 取自 Loyalsoldier 同一次发布 202611042203；ASN 取自 xishang0128/geoip 当前 latest 资产；Country 取自 alecthw 当前 release 分支提交。
+下载总量 37249441 字节，约 35.52 MiB。上游给出摘要的三个 Release 资产已验证摘要，Country 摘要自行计算记录。
+MMDB 元数据 v2、基本搜索树大小检查通过；DAT 外层 Protobuf 长度边界和分类名初检通过（GeoIP 260 类；GeoSite 1562 类，含 CN/GFW）。
+限制：未让固定 Meta/Xray/sing-box 实际加载；不能宣称这些候选已是经过固定核心验证的最后可用版本。
+没有覆盖 assets/ASN.mmdb 原锁定文件，没有更改 prepare.py、sources.lock.json 或 workflow，没有推送候选快照。
+
+二、同类数据发现
+1. OpenClash 四份预装数据库：自定义 sources.lock.json 固定内容。Country 地址含 commit；GeoIP/GeoSite 地址含日期 tag；ASN 已用本地原快照。后续可采用在线最新 + 已验证快照托底。
+2. PassWall/Xray/sing-box 另一套 GeoIP/GeoSite：实际安装 v2ray-geoip 和 v2ray-geosite。官方 packages 固定配方 net/v2ray-geodata/Makefile 固定 geoip 202610050438、geosite 20261009101206 和 HASH；安装路径 /usr/share/v2ray/{geoip,geosite}.dat，/usr/share/xray 是链接。与 /etc/openclash 不是同一份文件。官方静态发布地址不会仅因正常发布新版本而旧 HASH 失效，但旧资产删除仍会失败。
+3. PassWall 内置 gfwlist/chnroute/chnroute6/chnlist：随锁定 LuCI 源码冻结，运行时规则更新使用在线地址；不在自定义四文件锁定策略内。只修改 OpenClash 四文件策略不会更新这些列表。
+4. OpenClash 中国 IPv4/IPv6 IP 列表：随固定插件源码提供，另有运行时在线更新地址；不是固定 SHA+滚动 URL 的相同构建冲突。运行时数据库更新脚本有非空/HTML/大小检查，但不能等同于完整格式或旧核心兼容校验。
+5. OAF feature_cn.cfg/feature_en.cfg：随固定 open-app-filter Git 提交 569f93bfd56afc3ae8c21f13fc973926ff6629a5 提供。固定 LuCI 特征库上传页面要求 v3.0，属于与解析器配套的数据，不建议无条件追最新。
+6. CA 根证书、zoneinfo 时区数据：由官方版本化配方固定，属于已知版本；更新信任政策/时区会改变语义，不应作为普通地理库自动取最新。Sec1 已独立审阅 CA 更新。
+7. Meta Alpha、Bandix、ChinaDNS-NG 等二进制：锁版本和哈希是程序兼容约束，不应借数据库放开锁定一并改动。Bandix 默认只启用流量功能；默认关闭连接、DNS（及其附带 GeoIP 分析链），没有发现当前配方另行拉取 ASN 式滚动数据库。
+8. nlbwmon/Bandix 历史统计、DHCP 前缀状态、ACME 证书与私钥：属于本机生成或用户状态，不是上游发布的可替换数据库，不纳入公共快照覆盖。
+
+三、建议的后续实现
+固定程序与配套特征格式；地理/域名分类数据按固定来源每次解析并记录实际摘要。
+在线下载失败、内容无效或固定核心加载失败时，可回退已验证的整套快照；GeoIP/GeoSite 成对使用，避免一新一旧。
+将 online/fallback、下载地址、原始发布日期、SHA256、回退原因放入构建记录和运行摘要，避免悄悄回退。
+数据库内嵌较旧构建时间不等于文件损坏，回退须显示年龄，是否允许过旧数据可另定策略。
+OpenClash 与 PassWall 分别明确文件路径与所需分类标签，不能仅覆盖一个目录即宣称二者都更新。
+OAF 特征库、CA、时区及程序二进制继续经审阅更新。
+候选二进制 .dat/.mmdb 接入 Git 前须设置 -text，防止现有宽泛 text/eol=lf 属性转换二进制内容。
+
+官方固定配方证据：
+https://github.com/immortalwrt/packages/blob/e071e533c3176712775e8932f5a650ef2dcda5e9/net/v2ray-geodata/Makefile
+https://github.com/immortalwrt/packages/blob/e071e533c3176712775e8932f5a650ef2dcda5e9/net/open-app-filter/Makefile
+https://github.com/immortalwrt/luci/blob/c84adb975e207ae8b14982191838ec6218d632cd/applications/luci-app-appfilter/luasrc/model/cbi/appfilter/feature.lua
+https://github.com/immortalwrt/luci/blob/c84adb975e207ae8b14982191838ec6218d632cd/applications/luci-app-openclash/root/usr/share/openclash/openclash_geo.sh
+https://github.com/immortalwrt/luci/blob/c84adb975e207ae8b14982191838ec6218d632cd/applications/luci-app-passwall/root/usr/share/passwall/rule_update.lua

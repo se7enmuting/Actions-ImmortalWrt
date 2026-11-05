@@ -107,7 +107,8 @@ def save_asset(spec, assets, expected=None):
         raise RuntimeError(f"Upstream SHA256 mismatch: {spec['file']}")
     (assets / spec["file"]).write_bytes(data)
     return {**spec, "sha256": digest, "size": len(data),
-            "checksum_source": "upstream" if expected else "computed"}
+            "checksum_source": "upstream" if expected else "computed",
+            "fetched_at": datetime.now(timezone.utc).isoformat()}
 
 
 def resolve_mihomo(policy, assets):

@@ -1,0 +1,111 @@
+{
+  "policy": [
+    {
+      "file": "Country.mmdb",
+      "repo": "alecthw/mmdb_china_ip_list",
+      "ref": "release",
+      "path": "lite/Country.mmdb"
+    },
+    {
+      "file": "GeoIP.dat",
+      "repo": "Loyalsoldier/v2ray-rules-dat",
+      "release": "latest",
+      "asset": "geoip.dat"
+    },
+    {
+      "file": "GeoSite.dat",
+      "repo": "Loyalsoldier/v2ray-rules-dat",
+      "release": "latest",
+      "asset": "geosite.dat"
+    },
+    {
+      "file": "ASN.mmdb",
+      "repo": "xishang0128/geoip",
+      "release": "tag:latest",
+      "asset": "GeoLite2-ASN.mmdb"
+    }
+  ],
+  "assets": [
+    {
+      "file": "Country.mmdb",
+      "url": "https://raw.githubusercontent.com/alecthw/mmdb_china_ip_list/643205a0ca74e8310588a8fce50836b007576e24/lite/Country.mmdb",
+      "source_commit": "643205a0ca74e8310588a8fce50836b007576e24",
+      "ref": "release",
+      "sha256": "6f361201de55f3d449430d4231c83526b9adf1c99c1851b417addcc88653606b",
+      "size": 268449,
+      "checksum_source": "computed",
+      "downloaded_at": "2026-11-05T14:19:13.403570+00:00",
+      "role": "fallback-requires-fixed-core-validation-at-build",
+      "format_check": {
+        "database_type": "GeoIP2-Country",
+        "binary_format_major_version": 2,
+        "binary_format_minor_version": 0,
+        "ip_version": 6,
+        "record_size": 24,
+        "node_count": 44663,
+        "build_epoch": 1793749875
+      }
+    },
+    {
+      "file": "GeoIP.dat",
+      "url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202611042203/geoip.dat",
+      "release": "202611042203",
+      "release_id": 434506877,
+      "asset_id": 711102262,
+      "asset_updated_at": "2026-11-04T22:04:27Z",
+      "sha256": "06c1d50d0013af57ffe78c5af93f0dc6aa998890f3ee231393816f9117810c4a",
+      "size": 16546071,
+      "checksum_source": "upstream",
+      "downloaded_at": "2026-11-05T14:19:13.403590+00:00",
+      "role": "fallback-requires-fixed-core-validation-at-build",
+      "format_check": {
+        "entries": 260,
+        "has_cn": true,
+        "has_gfw": false,
+        "validation": "outer Protobuf boundaries and category names only"
+      }
+    },
+    {
+      "file": "GeoSite.dat",
+      "url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202611042203/geosite.dat",
+      "release": "202611042203",
+      "release_id": 434506877,
+      "asset_id": 711102175,
+      "asset_updated_at": "2026-11-04T22:04:25Z",
+      "sha256": "916fea0cea925cc47f09001dfac652d5e8edb6db69ff13ad68e2b4ac9e8ecc1b",
+      "size": 11380673,
+      "checksum_source": "upstream",
+      "downloaded_at": "2026-11-05T14:19:13.403593+00:00",
+      "role": "fallback-requires-fixed-core-validation-at-build",
+      "format_check": {
+        "entries": 1562,
+        "has_cn": true,
+        "has_gfw": true,
+        "validation": "outer Protobuf boundaries and category names only"
+      }
+    },
+    {
+      "file": "ASN.mmdb",
+      "url": "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb",
+      "release": "latest",
+      "release_id": 98706234,
+      "asset_id": 711992894,
+      "asset_updated_at": "2026-11-05T04:02:03Z",
+      "sha256": "3f729dfdbca46d6bc83fe084e15e335cef702b46f9d9afb8feaede36180959f4",
+      "size": 9054248,
+      "checksum_source": "upstream",
+      "downloaded_at": "2026-11-05T14:19:13.403596+00:00",
+      "role": "fallback-requires-fixed-core-validation-at-build",
+      "format_check": {
+        "database_type": "GeoLite2-ASN",
+        "binary_format_major_version": 2,
+        "binary_format_minor_version": 0,
+        "ip_version": 6,
+        "record_size": 24,
+        "node_count": 1066914,
+        "build_epoch": 1793780130
+      }
+    }
+  ],
+  "validation_limit": "Structural precheck recorded here; each build must additionally validate loading with its fixed Meta binary."
+}

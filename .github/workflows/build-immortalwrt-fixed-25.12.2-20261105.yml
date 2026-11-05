@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: immortalwrt-fixed-25-pve-${{ github.ref }}
+  group: immortalwrt-fixed-25-pve-${{ github.ref }}-${{ inputs.operation }}
   cancel-in-progress: false
 
 defaults:
@@ -54,6 +54,8 @@ jobs:
           df -h / /mnt
 
       - name: Fetch locked release, feeds and Bandix
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: python3 immortalwrt-25.12-fixed-25.12.2-20261105/scripts/prepare.py "$BUILD_DIR"
 
       - name: Resolve and check configuration

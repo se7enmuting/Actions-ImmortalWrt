@@ -8,6 +8,7 @@ import shutil
 import sys
 
 from verify_config import read_config
+from geodata_release import render as render_geodata
 from verify_security import verify_manifest
 
 RECIPE = Path(__file__).resolve().parents[1]
@@ -112,6 +113,7 @@ def main():
         "Use an isolated PVE test VM first. Read README.zh-CN.md before installation.\n"
         "Do not restore a complete 18.06 configuration archive.\n"
     )
+    report += render_geodata(lock)
     (output / "BUILD-INFO.md").write_text(report, encoding="utf-8")
     checksums = [
         f"{sha256_file(path)}  {path.name}"

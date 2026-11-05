@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tarfile
 import urllib.request
+from geodata import prepare as prepare_geodata
 
 RECIPE = Path(__file__).resolve().parents[1]
 
@@ -100,11 +101,8 @@ def main():
     unpack_core(archive, core, mihomo.get("archive_format", "gzip"))
     core.chmod(0o755)
     archive.unlink()
-    for spec in lock["geodata"]:
-        if spec["file"] not in {"Country.mmdb", "GeoIP.dat", "GeoSite.dat", "ASN.mmdb"}:
-            raise RuntimeError("Unsupported geodata destination")
-        target = work / "files/etc/openclash" / spec["file"]
-        install_geodata(spec, target)
+    lock["geodata_baseline"] = lock["geodata"]
+    lock["geodata"] = prepare_geodata(RECIPE, work / "files/etc/openclash", core)
     # amd64-v2 requires the matching guest CPU features; AVX is not required.
     (work / "build-lock.json").write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
     print(f"Prepared ImmortalWrt {lock['release']} at {lock['core']['commit']}")

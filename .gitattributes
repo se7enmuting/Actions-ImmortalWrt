@@ -9,3 +9,6 @@ immortalwrt-25.12-fixed-25.12.2-20261105/patches/*.patch -whitespace
 
 # Fixed geodata snapshots are binary, never normalize line endings.
 immortalwrt-*/assets/*.mmdb -text
+
+immortalwrt-*/assets/fallback-geodata/**/*.dat -text
+immortalwrt-*/assets/fallback-geodata/**/*.mmdb -text

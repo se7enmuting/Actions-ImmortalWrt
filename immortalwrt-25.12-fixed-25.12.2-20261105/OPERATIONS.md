@@ -30,7 +30,7 @@ DDNS 使用 `dnspod.cn-v3`：用户名为 SecretId，密码为 SecretKey；域�
 
 PVE 客机需要实际获得完整的 x86-64-v2 指令集，不能只看宿主机型号。可采用 `x86-64-v2-AES` 或经核实的其他 CPU 类型；`host` 并非必须。更改虚拟 CPU 类型通常需要关机再启动。仅更换同版本的 v1/v2 时，OpenClash 更新页面可能因只比较版本号而跳过下载，需另行核对二进制架构。编译版本标题旁的固定星号不是更新或失败状态。
 
-Country.mmdb、GeoIP.dat、GeoSite.dat、ASN.mmdb 也预装经过 SHA256 校验的基线，首次启动不必先借助代理下载这些数据库。数据库来源和摘要记录在 `sources.lock.json`，它们不是每次构建自动追最新。ASN 发布地址为上游滚动标签，内容变化时校验会失败，需要审阅并更新锁文件，不能跳过校验。
+Country.mmdb、GeoIP.dat、GeoSite.dat、ASN.mmdb 每次构建从固定来源更新，并使用固定 Meta 加载验证；失败则整套回退到仓库校验快照。实际来源、版本/更新时间、获取时间与回退状态写入 build-lock.json 和 Release 说明。程序、V2Ray 配套数据与 OAF 特征库继续固定，见 [数据策略](DATA-POLICY.md)。
 
 安装后可使用 OpenClash 原生更新功能更新数据库及大陆 IPv4/IPv6 地址列表。先备份、检查配置兼容性，再重启并核对策略组选择、DNS 与客户端连接。内核升级与数据库更新互相独立。
 

@@ -1,6 +1,6 @@
 # ImmortalWrt 25.12.2 · 固定版 20261105 Sec1
 
-> 本目录保留 2026-11-05 的锁定版本，并补上服务启动与 uHTTPd 参数兼容修正、回移明确的 Fullcone 内核修复；基础版本保持 25.12.2。需要每次追新时使用[最新版流程](../README.md)。ASN.mmdb 使用仓库内保存的原锁定快照并核验原 SHA256，避免上游滚动链接变化破坏固定构建。
+> 本目录保留 2026-11-05 的锁定版本，并补上服务启动与 uHTTPd 参数兼容修正、回移明确的 Fullcone 内核修复；基础版本保持 25.12.2。需要每次追新时使用[最新版流程](../README.md)。程序版本继续固定；OpenClash 四份数据库每次从固定来源获取当前内容，经固定 Meta 加载检查后使用，失败则使用仓库托底快照。
 
 适用于 g-pve / b-pve 下的 x86_64 路由虚拟机。两地共用固件，网络、密码、订阅及 DDNS 凭据在安装后分别配置。
 
@@ -59,9 +59,9 @@
 
 系统内核、基础树锁定官方 v25.12.2 release；packages/luci 使用官方 openwrt-25.12 维护分支在 2026-11-04 核对的固定提交，其他 feeds 使用 release 自带提交。不是 master/SNAPSHOT，也不修改第三方插件源码强制适配。
 
-sources.lock.json 固定源码、资产及额外回移补丁。以后升级要主动审阅并修改锁文件，不会在每次构建时自动追最新。
+sources.lock.json 固定系统、插件、Meta 和回移补丁；这些程序升级仍需审阅锁文件。OpenClash 四份数据库按独立数据策略每次更新，实际来源记录在本次 build-lock.json。
 
-Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Meta 使用 OpenClash 官方 core/master/meta 通道的 Alpha amd64-v2，固定到已验证版本的源提交并校验 SHA256，不要求 AVX；PVE 客机需暴露完整的 x86-64-v2 指令集，可采用 x86-64-v2-AES。四份地址/域名/ASN 数据库也按锁文件校验后预装；后续通过 OpenClash 独立更新。
+Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定提交。后端沿用作者 Makefile 下载并校验的预编译 Rust/eBPF 二进制，不宣称本 Workflow 从 Rust 源码重编该二进制。Meta 使用 OpenClash 官方 core/master/meta 通道的 Alpha amd64-v2，固定到已验证版本的源提交并校验 SHA256，不要求 AVX；PVE 客机需暴露完整的 x86-64-v2 指令集，可采用 x86-64-v2-AES。四份地址/域名/ASN 数据库按 [数据边界与验证策略](DATA-POLICY.md) 获取、加载验证并预装；Release 说明标注实际版本/时间及是否托底，安装后仍可通过 OpenClash 独立更新。
 
 OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6.1.4；这是官方配套集成，版本号不等于未维护。没有额外切换到上游 7.x 或修改旧版来强制兼容。
 
