@@ -76,6 +76,7 @@ jobs:
           # Official maintenance feed provides multiple Go compiler versions.
           python3 "$GITHUB_WORKSPACE/immortalwrt-25.12/scripts/go_preflight.py" choose "$BUILD_DIR"
           ./scripts/feeds update -i packages 2>&1 | tee -a feeds-update.log
+          python3 "$GITHUB_WORKSPACE/immortalwrt-25.12/scripts/go_preflight.py" index "$BUILD_DIR"
           python3 "$GITHUB_WORKSPACE/immortalwrt-25.12/scripts/configure.py" "$BUILD_DIR" \
             2>&1 | tee feeds-install.log
           python3 "$GITHUB_WORKSPACE/immortalwrt-25.12/scripts/verify_sources.py" "$BUILD_DIR"

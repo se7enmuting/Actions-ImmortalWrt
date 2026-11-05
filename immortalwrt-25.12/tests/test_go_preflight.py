@@ -47,13 +47,33 @@ class GoPreflight(unittest.TestCase):
 
     def test_selects_stable_official_compiler_and_records_selector_hashes(self):
         original = self.defaults.read_bytes()
+        cache = self.work / "feeds/packages.tmp/info/.packageinfo-lang_golang_golang"
+        cache.parent.mkdir(parents=True)
+        cache.write_text("stale Go 1.26 metadata")
         self.recipe("1.28", "0", "rc1")
         self.assertEqual(go_preflight.choose(self.work), "1.27")
+        self.assertFalse(cache.exists())
         self.assertIn("GO_DEFAULT_VERSION:=1.27", self.defaults.read_text())
         record = json.loads((self.work / "build-lock.json").read_text())["go_toolchain"]
         self.assertEqual(record["version"], "1.27.3")
         self.assertEqual(record["default_original_sha256"], hashlib.sha256(original).hexdigest())
         self.assertEqual(record["default_selected_sha256"], hashlib.sha256(self.defaults.read_bytes()).hexdigest())
+
+    def test_reindexed_dummy_dependency_selects_new_compiler(self):
+        go_preflight.choose(self.work)
+        (self.work / "feeds/packages.index").write_text(
+            "Source-Makefile: feeds/packages/lang/golang/golang/Makefile\n"
+            "Package: golang\nBuild-Depends/host: golang1.27/host\n")
+        go_preflight.check_index(self.work)
+        self.assertTrue(json.loads((self.work / "build-lock.json").read_text())["go_toolchain"]["index_verified"])
+
+    def test_stale_index_fails_before_package_installation(self):
+        go_preflight.choose(self.work)
+        (self.work / "feeds/packages.index").write_text(
+            "Source-Makefile: feeds/packages/lang/golang/golang/Makefile\n"
+            "Build-Depends/host: golang1.26/host\n")
+        with self.assertRaisesRegex(RuntimeError, "index does not select golang1.27"):
+            go_preflight.check_index(self.work)
 
     def test_xray_127_is_checked_without_modifying_download(self):
         go_preflight.choose(self.work)

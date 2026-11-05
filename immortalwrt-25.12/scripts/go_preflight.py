@@ -33,6 +33,11 @@ def choose(work):
     if count != 1:
         raise RuntimeError("Cannot identify the official Go default selector")
     defaults.write_bytes(replacement)
+    # scan.mk does not track golang-values.mk as a dependency. Invalidate the
+    # generated Go metadata so feeds install links the newly selected host tool.
+    for cached in (work / "feeds/packages.tmp/info").glob(".packageinfo-lang_golang_*"):
+        if cached.is_file():
+            cached.unlink()
     lock_path = work / "build-lock.json"
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     lock["go_toolchain"] = {
@@ -46,6 +51,22 @@ def choose(work):
     }
     lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
     return series
+
+
+def check_index(work):
+    lock_path = work / "build-lock.json"
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    series = lock["go_toolchain"]["series"]
+    text = (work / "feeds/packages.index").read_text(encoding="utf-8")
+    blocks = [block for block in text.split("Source-Makefile: ")[1:]
+              if block.splitlines()[0] == "feeds/packages/lang/golang/golang/Makefile"]
+    if len(blocks) != 1 or not re.search(
+        r"^Build-Depends/host:.*(?<!\S)golang" + re.escape(series) + r"/host(?!\S)", blocks[0], re.M
+    ):
+        raise RuntimeError(f"Go feed index does not select golang{series}/host")
+    lock["go_toolchain"]["index_verified"] = True
+    lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+    print(f"Verified default golang/host dependency: golang{series}/host")
 
 
 def check(work):
@@ -92,10 +113,12 @@ def check(work):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=["choose", "check"])
+    parser.add_argument("operation", choices=["choose", "index", "check"])
     parser.add_argument("work", type=Path)
     args = parser.parse_args()
     if args.operation == "choose":
         print(choose(args.work.resolve()))
+    elif args.operation == "index":
+        check_index(args.work.resolve())
     else:
         check(args.work.resolve())
