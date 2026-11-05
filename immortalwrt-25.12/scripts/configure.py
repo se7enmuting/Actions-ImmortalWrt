@@ -24,7 +24,7 @@ for feed in lock["plugin_feeds"]:
 subprocess.run(["./scripts/feeds", "install", "-a", "-p", "packages"], cwd=work, check=True)
 subprocess.run(["./scripts/feeds", "install", *packages], cwd=work, check=True)
 # New OAF creates these lazily at first start. Ship its own templates so the
-# first-boot profile can disable filtering before the service is ever enabled.
+# first-boot profile can set filtering, recording and MAC defaults before start.
 config_dir = work / "files/etc/config"
 config_dir.mkdir(parents=True, exist_ok=True)
 for name in ("fwx", "macfilter"):

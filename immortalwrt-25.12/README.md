@@ -52,7 +52,8 @@ Bandix 后端沿用作者最新 Makefile 下载并校验的预编译 Rust/eBPF �
 - x86/64 官方内核已内建 VirtIO 网卡、磁盘、SCSI、balloon、console；固件另包含 qemu-ga。PVE 内仍需为新 VM 启用 Guest Agent。
 - Bandix 默认接口 br-lan，只开流量模块与历史保存，关闭连接、DNS 和 GeoIP 分析。实际 LAN 接口不同时先修改。监听 127.0.0.1，通过 LuCI 使用。
 - 关闭软件/硬件流量卸载，不装 Turbo ACC；Bandix 与应用过滤需要可观察的数据路径。
-- OpenClash、PassWall、应用过滤、UPnP、DDNS、ACME 默认关闭，安装后按需配置。两个代理先只启用一个。应用识别不是对任意加密协议或代理隧道的完整保证。
+- 应用过滤后台 appfilter 默认开机启动，首次启动时立即启动并初始化特征库；默认开启应用过滤和应用记录，不预设应用屏蔽规则。只加载 OAF 驱动不足以支持用户列表和保存设置。
+- OpenClash、PassWall、UPnP 的功能开关默认关闭，保留原生服务自启入口；在页面开启后，重启仍按保存的配置运行。DDNS、ACME 配置后按原生页面或操作说明启用。两个代理先只启用一个。应用识别不是对任意加密协议或代理隧道的完整保证。
 - IPv6 使用新版 odhcpd 原生前缀历史及持久目录，不包含旧版前缀修复脚本和 5 分钟租期改法。
 - ACME 首次签发、凭据填写、uHTTPd 自动重载、DNSPod 参数注意事项及离线迁移经验见 [OPERATIONS.md](OPERATIONS.md)。
 - 包含与已上线环境一致的临时入站 TCP/IPv4 Options 过滤；这不代表基础内核已修复，详见操作说明。

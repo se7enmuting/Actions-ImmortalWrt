@@ -24,7 +24,8 @@ set dhcp.odhcpd.piodir='/etc/odhcpd-piodir'
 set dhcp.lan.max_preferred_lifetime='2700'
 set dhcp.lan.max_valid_lifetime='5400'
 set passwall.@global[0].enabled='0'
-set fwx.appfilter.enable='0'
+set fwx.appfilter.enable='1'
+set fwx.record.enable='1'
 set fwx.macfilter.enable='0'
 set macfilter.global.enable='0'
 set upnpd.config.enabled='0'
@@ -35,12 +36,19 @@ chmod 700 /etc/odhcpd-piodir
 for config in system luci firewall bandix nlbwmon openclash passwall fwx macfilter upnpd dhcp; do
     uci -q commit "$config"
 done
-# Monitor is available immediately; interception/filtering requires local setup.
-for service in bandix nlbwmon qemu-ga; do
+# Enable OAF userspace as well as its driver: LuCI data and saves require oafd.
+# Optional proxies and UPnP have UCI guards set to 0 above. Keep their
+# autostart entries so a later LuCI enable also persists across reboots.
+for service in bandix nlbwmon qemu-ga appfilter openclash passwall miniupnpd; do
     [ ! -x "/etc/init.d/$service" ] || "/etc/init.d/$service" enable
 done
-for service in openclash passwall appfilter miniupnpd ddns acme; do
+for service in ddns acme; do
     [ ! -x "/etc/init.d/$service" ] || "/etc/init.d/$service" disable
+done
+# Newly enabled services may not be in this first boot's rcS queue yet.
+# Initialize OAF collection and the UPnP reload trigger (UPnP remains off).
+for service in appfilter miniupnpd; do
+    [ ! -x "/etc/init.d/$service" ] || "/etc/init.d/$service" start
 done
 # Native ACME installs its cron entry when started after local account setup.
 [ ! -x /etc/init.d/acme ] || /etc/init.d/acme stop >/dev/null 2>&1

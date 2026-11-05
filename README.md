@@ -7,7 +7,7 @@
 | 流程 | 运行入口 | 更新行为 |
 |---|---|---|
 | **Latest 25.12（默认使用）** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-latest.yml) | 每次运行获取 25.12 维护分支、独立插件主分支、Meta Alpha 和数据库的最新版本 |
-| **Fixed 25.12.2 / 20261105** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-fixed-25.12.2-20261105.yml) | 保留 2026-11-05 的配方与锁定版本，用于重复构建旧基线 |
+| **Fixed 25.12.2 / 20261105** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-fixed-25.12.2-20261105.yml) | 保留 2026-11-05 的锁定版本，包含服务启动修正，用于构建旧版本基线 |
 
 进入对应 Actions 页面 → **Run workflow** → 选择 main → operation 选择 **build**。默认上传 Artifact，并发布独立 Release，保留以前的 Release。
 
@@ -51,6 +51,18 @@
 | 证书续签 | 原生 ACME、acme.sh DNS API、中文管理页面；配置后自动续签 |
 | 界面及其他 | Argon、简体中文、WOL、UPnP、QEMU Guest Agent |
 | 排除 | KMS、DDNS-Go、PassWall2、SQM、旧 wrtbwmon 和旧管控插件 |
+
+两套流程均默认启动应用过滤后台，开启应用过滤与应用记录，不预设应用屏蔽规则；首次启动通过原生服务初始化特征库，避免仅有驱动而后台未运行导致页面一直等待、设置无法保存。固定版保留软件版本，同步补上服务启动遗漏。
+
+| 服务 | 默认状态与启用方式 |
+|---|---|
+| 应用过滤 | 后台自启，首次启动立即运行；过滤与记录开关开启，不预设屏蔽应用 |
+| OpenClash、PassWall | 功能开关关闭，保留自启入口；页面配置并开启后，重启按保存的配置运行 |
+| UPnP | 功能开关关闭，保留自启和配置触发链；以后由原生页面开启 |
+| DDNS、ACME | 配置后启用；DDNS 页面 Start DDNS 会开启自启，ACME 按操作说明启用和签发 |
+| Bandix、nlbwmon、QEMU Guest Agent | 后台自启 |
+| vnStat2 | 原生服务自启，需在页面选择真实 WAN 接口后统计 |
+| WOL、Argon | 无独立常驻后台 |
 
 GitHub Actions 工具仍固定经过选择的稳定提交；它们是构建工具，不是固件组件。
 
