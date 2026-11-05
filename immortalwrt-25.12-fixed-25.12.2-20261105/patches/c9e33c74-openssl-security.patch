@@ -1,0 +1,70 @@
+diff --git a/package/libs/openssl/Makefile b/package/libs/openssl/Makefile
+index b4675a25a25..5b57fc3596f 100644
+--- a/package/libs/openssl/Makefile
++++ b/package/libs/openssl/Makefile
+@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
+ 
+ PKG_NAME:=openssl
+ PKG_VERSION:=3.5.8
+-PKG_RELEASE:=1
++PKG_RELEASE:=2
+ PKG_BUILD_FLAGS:=no-mips16 gc-sections no-lto
+ 
+ PKG_BUILD_PARALLEL:=1
+diff --git a/package/libs/openssl/patches/010-fix-aes-gcm-siv-cipher.patch b/package/libs/openssl/patches/010-fix-aes-gcm-siv-cipher.patch
+index deca8f1e569..5d079b2c199 100644
+--- a/package/libs/openssl/patches/010-fix-aes-gcm-siv-cipher.patch
++++ b/package/libs/openssl/patches/010-fix-aes-gcm-siv-cipher.patch
+@@ -1,45 +1,21 @@
+ From: Felix Fietkau <nbd@nbd.name>
+ Date: Mon, 1 Dec 2025 16:22:17 +0000
+-Subject: [PATCH] providers/implementations/ciphers: fix AES-GCM-SIV and
+- AES-SIV with zero-length messages
++Subject: [PATCH] providers/implementations/ciphers: fix AES-SIV with
++ zero-length messages
+ 
+-When ossl_aes_gcm_siv_cipher() or siv_cipher() is called with in=NULL
+-for zero-length input, the hw->cipher function interprets this as a
+-finalization request and calls the finish function instead of
+-encrypt/decrypt. This causes the authentication tag to never be computed
+-for zero-length messages, resulting in decryption verification failures.
++When siv_cipher() is called with in=NULL for zero-length input, the
++hw->cipher function interprets this as a finalization request and calls
++the finish function instead of encrypt/decrypt. This causes the
++authentication tag to never be computed for zero-length messages,
++resulting in decryption verification failures.
+ 
+ Fix this by substituting a static empty byte address when in is NULL,
+ ensuring hw->cipher always receives a non-NULL pointer from Update calls
+ and correctly routes to the encrypt/decrypt path.
+ 
+-For AES-GCM-SIV, this is a different fix than upstream commit
+-f1a4f0368b73 ("make aes-gcm-siv work with zero-length messages") which
+-removed early-return and length checks that don't exist in 3.5.x.
+-
+ Signed-off-by: Felix Fietkau <nbd@nbd.name>
+ 
+ ---
+---- a/providers/implementations/ciphers/cipher_aes_gcm_siv.c
+-+++ b/providers/implementations/ciphers/cipher_aes_gcm_siv.c
+-@@ -140,6 +140,7 @@ static int ossl_aes_gcm_siv_cipher(void
+- {
+-     PROV_AES_GCM_SIV_CTX *ctx = (PROV_AES_GCM_SIV_CTX *)vctx;
+-     int error = 0;
+-+    static const unsigned char empty;
+- 
+-     if (!ossl_prov_is_running())
+-         return 0;
+-@@ -149,6 +150,9 @@ static int ossl_aes_gcm_siv_cipher(void
+-         return 0;
+-     }
+- 
+-+    if (in == NULL)
+-+        in = &empty;
+-+
+-     error |= !ctx->hw->cipher(ctx, out, in, inl);
+- 
+-     if (outl != NULL && !error)
+ --- a/providers/implementations/ciphers/cipher_aes_siv.c
+ +++ b/providers/implementations/ciphers/cipher_aes_siv.c
+ @@ -114,6 +114,7 @@ static int siv_cipher(void *vctx, unsign

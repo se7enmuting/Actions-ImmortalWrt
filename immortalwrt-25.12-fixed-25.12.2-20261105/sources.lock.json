@@ -74,6 +74,79 @@
       "upstream_commit": "ae5a064f132b6476d1094fbb7fe2066db272c7d4",
       "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/ae5a064f132b6476d1094fbb7fe2066db272c7d4",
       "scope": "Linux 6.12 conntrack notifier chains (6.18 changes excluded)"
+    },
+    {
+      "file": "patches/61afc164-uhttpd-security.patch",
+      "sha256": "60f0226715715ca8d64c7bc11a9e86f99fc07a207fb0ede58dde849e2501a27f",
+      "upstream_commit": "61afc164a562bf89aa7725282e52d7e539a32544",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/61afc164a562bf89aa7725282e52d7e539a32544",
+      "scope": "uhttpd reviewed security backport"
+    },
+    {
+      "file": "patches/4b42bd73-uhttpd-security.patch",
+      "sha256": "ad212f56175dc613cc2ed2332633085e2c5d1e47755c7d3e6e3ae94e5409f211",
+      "upstream_commit": "4b42bd73a20edf9d02c29a0be890c51cf9457040",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/4b42bd73a20edf9d02c29a0be890c51cf9457040",
+      "scope": "uhttpd reviewed security backport"
+    },
+    {
+      "file": "patches/7ac5eaf3-openssl-security.patch",
+      "sha256": "d94414b4597379c8b076c4ab94832fd9eedb1e8593aef407d7736435a40a22e7",
+      "upstream_commit": "7ac5eaf362f7d42fd68537173cc1f102786876a7",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/7ac5eaf362f7d42fd68537173cc1f102786876a7",
+      "scope": "openssl reviewed security backport"
+    },
+    {
+      "file": "patches/c9e33c74-openssl-security.patch",
+      "sha256": "97da2dde5d5e98e24969a73417ad850de01f23cd72e63ad8156c7a5a3b67430c",
+      "upstream_commit": "c9e33c746791190e2925227d11302bc8e454cd0c",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/c9e33c746791190e2925227d11302bc8e454cd0c",
+      "scope": "openssl reviewed security backport"
+    },
+    {
+      "file": "patches/e594c1db-openssl-security.patch",
+      "sha256": "0320c7acd6f67f7e7f729e311009fd365b60dc2a046973cc54a4d1c31d1d16ca",
+      "upstream_commit": "e594c1dbf3a14eab325e8b101eb7bbb16e43aeab",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/e594c1dbf3a14eab325e8b101eb7bbb16e43aeab",
+      "scope": "openssl reviewed security backport"
+    },
+    {
+      "file": "patches/8771bd0d-ca-certificates-security.patch",
+      "sha256": "654f7d38873130034f70a70255f7e5aaaa29434fd5a7c71d9e7180372421d14c",
+      "upstream_commit": "8771bd0dfb0ba98e9dce5f1e9138ac96e1de9f89",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/8771bd0dfb0ba98e9dce5f1e9138ac96e1de9f89",
+      "scope": "ca-certificates reviewed security backport"
+    },
+    {
+      "file": "patches/4a686570-ca-certificates-security.patch",
+      "sha256": "f27e28620d8940e21bdd78bde10a0f29c1bf20cf20a2cfb916fc87d4bb19b673",
+      "upstream_commit": "4a686570eb6495635279273f034caa2a0f37f36e",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/4a686570eb6495635279273f034caa2a0f37f36e",
+      "scope": "ca-certificates reviewed security backport"
+    },
+    {
+      "file": "patches/1684a761-musl-security.patch",
+      "sha256": "d6842d561d74c99ad1c7f331d828efcbeea2523d31d30ad55aee973b17c5ffe6",
+      "upstream_commit": "1684a761a3bb99f11bb87eb02f62894563e119c6",
+      "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/1684a761a3bb99f11bb87eb02f62894563e119c6",
+      "scope": "musl reviewed security backport"
     }
-  ]
+  ],
+  "security_revision": {
+    "id": "sec1-20261105",
+    "components": {
+      "uhttpd": "2026-08-24 / 373145f72c884c36a2b16f7f47e74ffae06bd754",
+      "openssl": "3.5.9",
+      "ca-certificates": "20260816-r2",
+      "musl": "1.2.5 + regcomp overflow fix"
+    },
+    "expected_files": {
+      "package/libs/openssl/Makefile": "4b911200b312e9a873967a3cce83b9bb700450fd6d1c4a4cebd5b43c695c4152",
+      "package/libs/openssl/patches/010-fix-aes-gcm-siv-cipher.patch": "b13801c3fb3980fc292ad983b41074d92986dd0c12b421f2f15f70f3ce9be128",
+      "package/network/services/uhttpd/Makefile": "c5ee746eae2d9183d01f2a6dfa818eb300b1fdff86125f52fcb1e7c6db2bd6c8",
+      "package/system/ca-certificates/Makefile": "7aad14c2b0b0237fd03671b5ca06ecd92d81c62fc611b7397953adb814b7f550",
+      "package/system/ca-certificates/patches/0002-blacklist-certs.patch": "9a323f0fb873240c0cebf19d876d57f3c1885feb49a3044f8c7575c8a6d3cd21",
+      "toolchain/musl/patches/008-regex-avoid-int-overflow-in-regcomp.patch": "45320d9a2b0f9019e919a72277a053e22f3f00b0188fdc66a424548b51d604f8"
+    }
+  }
 }

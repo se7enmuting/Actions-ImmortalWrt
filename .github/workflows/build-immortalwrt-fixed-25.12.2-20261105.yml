@@ -1,4 +1,4 @@
-name: Build ImmortalWrt PVE (Fixed 25.12.2 / 20261105)
+name: Build ImmortalWrt PVE (Fixed 25.12.2 / 20261105 Sec1)
 
 on:
   workflow_dispatch:
@@ -69,6 +69,8 @@ jobs:
           if grep -q 'recursive dependency detected' defconfig.log; then exit 1; fi
           python3 "$GITHUB_WORKSPACE/immortalwrt-25.12-fixed-25.12.2-20261105/scripts/verify_config.py" \
             "$GITHUB_WORKSPACE/immortalwrt-25.12-fixed-25.12.2-20261105/config.seed" .config
+          python3 "$GITHUB_WORKSPACE/immortalwrt-25.12-fixed-25.12.2-20261105/scripts/verify_dependencies.py" "$BUILD_DIR"
+          python3 "$GITHUB_WORKSPACE/immortalwrt-25.12-fixed-25.12.2-20261105/scripts/verify_security.py" "$BUILD_DIR"
           ./scripts/diffconfig.sh > config.buildinfo
 
       - name: Download sources
@@ -78,6 +80,16 @@ jobs:
         run: |
           set -euo pipefail
           make download -j8 2>&1 | tee download.log
+
+      - name: Preflight patched security source preparation
+        id: security_prepare
+        if: inputs.operation == 'build'
+        working-directory: ${{ env.BUILD_DIR }}
+        run: |
+          set -euo pipefail
+          make -j2 toolchain/musl/prepare package/libs/openssl/prepare \
+            package/network/services/uhttpd/prepare package/system/ca-certificates/prepare \
+            2>&1 | tee security-prepare.log
 
       - name: Build firmware
         id: compile
@@ -110,6 +122,7 @@ jobs:
         env:
           CONFIG_RESULT: ${{ steps.configuration.outcome }}
           DOWNLOAD_RESULT: ${{ steps.download.outcome }}
+          SECURITY_RESULT: ${{ steps.security_prepare.outcome }}
           COMPILE_RESULT: ${{ steps.compile.outcome }}
           COLLECT_RESULT: ${{ steps.collect.outcome }}
           UPLOAD_RESULT: ${{ steps.upload.outcome }}
@@ -122,6 +135,7 @@ jobs:
             echo "|---|---|"
             echo "| 配置 | $CONFIG_RESULT |"
             echo "| 下载 | $DOWNLOAD_RESULT |"
+            echo "| 安全组件源码准备 | $SECURITY_RESULT |"
             echo "| 编译固件 | $COMPILE_RESULT |"
             echo "| 产物验证 | $COLLECT_RESULT |"
             echo "| 上传固件 | $UPLOAD_RESULT |"
@@ -182,7 +196,7 @@ jobs:
           if ! gh release view "$tag" >/dev/null 2>&1; then
             gh release create "$tag" --draft \
               --target "$SOURCE_COMMIT" \
-              --title "ImmortalWrt 25.12.2 Fixed 20261105 PVE · $BUILD_NUMBER-$BUILD_ATTEMPT" \
+              --title "ImmortalWrt 25.12.2 Fixed 20261105 Sec1 PVE · $BUILD_NUMBER-$BUILD_ATTEMPT" \
               --notes-file firmware/BUILD-INFO.md \
               --latest=false
           fi

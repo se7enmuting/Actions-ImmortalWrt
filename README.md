@@ -7,7 +7,7 @@
 | 流程 | 运行入口 | 更新行为 |
 |---|---|---|
 | **Latest 25.12（默认使用）** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-latest.yml) | 每次运行获取 25.12 维护分支、独立插件主分支、Meta Alpha 和数据库的最新版本 |
-| **Fixed 25.12.2 / 20261105** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-fixed-25.12.2-20261105.yml) | 保留 2026-11-05 的锁定版本，包含服务启动修正及 Fullcone 连接事件修复回移，基础版本保持 25.12.2 |
+| **Fixed 25.12.2 / 20261105 Sec1** | [Run workflow](https://github.com/se7enmuting/Actions-ImmortalWrt/actions/workflows/build-immortalwrt-fixed-25.12.2-20261105.yml) | 保留 2026-11-05 的锁定版本，包含服务启动修正、Fullcone 回移及 uHTTPd/OpenSSL/CA/musl 四组 Sec1 安全修复，基础版本保持 25.12.2 |
 
 进入对应 Actions 页面 → **Run workflow** → 选择 main → operation 选择 **build**。默认上传 Artifact，并发布独立 Release，保留以前的 Release。
 

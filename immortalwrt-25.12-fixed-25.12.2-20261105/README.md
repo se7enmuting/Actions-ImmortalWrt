@@ -1,4 +1,4 @@
-# ImmortalWrt 25.12.2 · 固定版 20261105
+# ImmortalWrt 25.12.2 · 固定版 20261105 Sec1
 
 > 本目录保留 2026-11-05 的锁定版本，并补上服务启动与 uHTTPd 参数兼容修正、回移明确的 Fullcone 内核修复；基础版本保持 25.12.2。需要每次追新时使用[最新版流程](../README.md)。固定版的 ASN 地址仍为上游滚动链接：若内容变化会因原 SHA256 不匹配而停止，不会自动更新或跳过校验。
 
@@ -15,9 +15,24 @@
 
 本流程以该官方标签的系统源码为基础，加入本仓库选定的插件、配置、服务启动与参数兼容修正，以及 Fullcone 内核修复回移，生成自定义固件。软件源及资产分别按 [sources.lock.json](sources.lock.json) 锁定；其中 packages/luci 的提交日期见下方“来源与版本”，不能将全部组件都理解为 9 月 6 日的版本。
 
+## 固定安全修订 Sec1
+
+`sec1-20261105` 在原固定基线上回移四组已审阅的安全修复，系统基础提交与插件/feed 提交继续锁定。工作流文件名保持不变，运行名称和 Release 标题包含 **Sec1**；旧 Release 保留用于回退。
+
+| 组件 | 本修订固定内容 |
+|---|---|
+| uHTTPd | 固定到 2026-08-24 的 `373145f7`，包含请求头资源限制、ubus 参数类型校验与资源释放修复，以及 URL-prefix Basic Auth 修复 |
+| OpenSSL | 3.5.9，包含维护分支对本地 AES-GCM-SIV 补丁的配套修正 |
+| CA 信任库 | 20260816-r2，包含撤销 emSign ECC Root CA - G3 的信任调整 |
+| musl | 保留 1.2.5，回移 `regcomp()` 整数溢出修复；从干净工具链重建 |
+
+八个官方提交的补丁、顺序与 SHA256 均记录在 [sources.lock.json](sources.lock.json)。构建先核对修订后源码摘要、原有 feeds 提交、选中组件及缺失依赖；下载后单独准备四组组件源码，提前检查解包与补丁应用，再完整编译。收集产物时核对 uHTTPd、OpenSSL、CA 的实际包版本；发布前再次检查固件 SHA256，全部上传后才公开 Release。
+
+安全修订需在测试 VM 验证 LuCI/ubus、HTTPS、Cloudflare/DNSPod、ACME 及订阅/规则下载。CA 信任变化可能暴露远端证书链问题，不通过关闭校验绕过。编译和发布成功不等于上述实机功能已验收。
+
 ## 如何运行
 
-进入仓库 Actions → **Build ImmortalWrt PVE (Fixed 25.12.2 / 20261105)** → **Run workflow**。
+进入仓库 Actions → **Build ImmortalWrt PVE (Fixed 25.12.2 / 20261105 Sec1)** → **Run workflow**。
 
 - operation=build：编译固件；默认保存 Artifact，并发布独立 Release。
 - operation=configure：只准备源码、解析并检查配置，不下载全部编译依赖、不编译固件、不发布 Release。

@@ -16,7 +16,11 @@ sys.path.insert(0, str(ROOT / "immortalwrt-25.12/scripts"))
 def module(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     result = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(result)
+    sys.path.insert(0, str(path.parent))
+    try:
+        spec.loader.exec_module(result)
+    finally:
+        sys.path.pop(0)
     return result
 
 
@@ -42,12 +46,12 @@ class TrafficConfiguration(unittest.TestCase):
             config.write_text(context, newline="\n")
             subprocess.run(["git", "init", str(work)], check=True, capture_output=True)
             subprocess.run(["git", "config", "core.autocrlf", "false"], cwd=work, check=True)
-            prepare.apply_backports(work, lock)
+            prepare.apply_backports(work, {**lock, "patches": lock["patches"][:1]})
             self.assertIn("CONFIG_NF_CONNTRACK_CHAIN_EVENTS", config.read_text())
             patch = work / "target/linux/generic/hack-6.12/952-net-conntrack-events-support-multiple-registrant.patch"
             self.assertIn("atomic_notifier_chain_register", patch.read_text())
             with self.assertRaises(subprocess.CalledProcessError):
-                prepare.apply_backports(work, lock)
+                prepare.apply_backports(work, {**lock, "patches": lock["patches"][:1]})
 
     def test_backport_checksum_failure_stops_before_applying(self):
         lock = json.loads((FIXED / "sources.lock.json").read_text())

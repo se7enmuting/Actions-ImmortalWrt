@@ -8,6 +8,7 @@ import shutil
 import sys
 
 from verify_config import read_config
+from verify_security import verify_manifest
 
 RECIPE = Path(__file__).resolve().parents[1]
 REQUIRED_PACKAGES = {
@@ -52,6 +53,8 @@ def validate(work):
     missing = {key for key in KERNEL_FEATURES if kernel.get(key) not in {"y", "m"}}
     if missing:
         raise RuntimeError(f"Missing required kernel features: {sorted(missing)}")
+    for manifest in manifests:
+        verify_manifest(manifest)
     # All four boot/filesystem combinations must exist.
     for fs in ("ext4", "squashfs"):
         for suffix in ("combined.img.gz", "combined-efi.img.gz"):
@@ -93,6 +96,7 @@ def main():
     report = (
         f"# ImmortalWrt {lock['release']} PVE\n\n"
         f"- Recipe commit: {os.getenv('GITHUB_SHA', 'local')}\n"
+        f"- Security revision: {lock['security_revision']['id']} (uHTTPd, OpenSSL 3.5.9, CA 20260816-r2, musl regcomp fix).\n"
         f"- Official release source: {lock['core']['commit']}\n"
         f"- Reviewed upstream backports: {', '.join(item['upstream_commit'] for item in lock['patches'])}\n"
         f"- Build: {os.getenv('GITHUB_RUN_NUMBER', 'local')}/{os.getenv('GITHUB_RUN_ATTEMPT', '1')}\n"

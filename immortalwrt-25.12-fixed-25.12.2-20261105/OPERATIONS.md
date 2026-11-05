@@ -120,3 +120,7 @@ DDNS 原生页面的 Start DDNS 会同时启用自启并启动服务；ACME 的�
 固定版保持 v25.12.2 的基础提交，额外回移 [官方 ae5a064 修复](https://github.com/immortalwrt/immortalwrt/commit/ae5a064f132b6476d1094fbb7fe2066db272c7d4) 的 Linux 6.12 部分，补丁文件及 SHA256 记录在 `sources.lock.json`，构建前校验后应用，产物 `build-lock.json` 保留记录。最新版由 25.12 维护分支提供对应修复，不重复打固定版补丁。两套产物都要求 `CONFIG_NF_CONNTRACK_EVENTS=y`、`CONFIG_NF_CONNTRACK_CHAIN_EVENTS=y`，并核对 Fullcone 与 nlbwmon 包。
 
 本次验证了回移补丁适用于固定源码，以及 Linux 6.12.103 的相关前置补丁上下文；这不等于已完成内核编译或实机验收。安装新固件后，要验证新连接事件、nlbwmon 实际记录、双栈统计及数据库重启保留；过去未采集的流量不能补回。固定版属于带明确内核回移的自定义固件，内核模块应使用同次构建的配套产物。
+
+## 固定版 Sec1 安全修订
+
+本修订回移 uHTTPd、OpenSSL、CA 信任库和 musl 四组安全修复，具体版本与验证链见 [README](README.md#固定安全修订-sec1)。系统内核基础提交保持不变，原有 IPv4 Options 临时过滤规则继续保留。musl 通过整套固件重编修复，不在运行设备上单独替换 libc；升级后验证 HTTPS 端点和插件功能。
