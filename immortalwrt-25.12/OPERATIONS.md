@@ -85,3 +85,22 @@ Fake-IP 模式下部分域名的 AAAA 响应可能为空，`curl -6 域名` 的 
 OpenClash、PassWall 保留原生服务开机启动入口，但 `openclash.config.enable=0`、`passwall.@global[0].enabled=0`，首次安装不自动开启代理，也不在首次初始化中启动代理。以后在原生页面配置并开启，保存的主开关会在重启后继续生效。不能再以禁用 init 自启来实现“代理默认关闭”，否则页面启动可能仅对当前开机有效。
 
 DDNS 原生页面的 Start DDNS 会同时启用自启并启动服务；ACME 的原生启用、首次签发和续签 cron 仍按本文前述步骤执行。它们需要账户或域名配置，不因本次启动修正提前启用。Bandix、nlbwmon、QEMU Guest Agent 保留自启；vnStat 需先选实际统计接口。WOL 与 Argon 不需要单独的常驻后台。
+
+## IPv6 SSH 监听与 WAN 放行
+
+2026-11-05 的现场排查确认过一类迁移遗漏：AAAA 记录指向路由器 LAN 的公网 IPv6，但 Dropbear 被改为只绑定 WAN；同时旧防火墙规则明确拒绝 WAN 入站 IPv6 TCP 22。DNSPod 与 DDNS 均可正常更新，仍无法通过该 IPv6 地址登录。现场分别修正监听和拒绝规则后，IPv4、IPv6 均通过密钥登录验证。
+
+两套配方沿用官方 Dropbear 默认的 LAN 绑定和 WAN 默认拒绝策略，没有写入现场的 WAN 单接口绑定、IPv6 SSH 拒绝规则，也不内置个人公钥或公网管理规则。需要远程 SSH 时，在目标设备完成以下配置：
+
+| 项目 | 要求 |
+|---|---|
+| 域名地址 | AAAA 应与准备连接的路由器公网 IPv6 一致，区分 WAN 地址与 LAN 的 PD 地址 |
+| SSH 监听 | 覆盖 AAAA 指向的本机地址；仅绑定 WAN 不会覆盖 LAN 的 PD 地址。需要双栈通用监听时，可清除对应 Dropbear 实例的 Interface 限制，由防火墙控制访问 |
+| 认证 | 先安装并验证自己的公钥；公网管理使用 PasswordAuth=off、RootPasswordAuth=off，不把个人密钥放入公共固件 |
+| WAN 规则 | 允许到路由器本机的 TCP 22，family=ipv6、src=wan、target=ACCEPT；来源前缀按实际管理范围设置 |
+| 规则冲突 | 检查旧的 Deny-SSH-WAN-IPv6 或等效拒绝规则及顺序，修改或移除冲突项；只在其后追加允许规则可能仍被先行拒绝 |
+| 双栈保留 | 保留经确认的 IPv4 SSH 入口，检查 fw4 配置后再重载；通过控制台或现有可信入口操作 |
+
+修改后分别检查监听地址、实际 nftables 入站规则，再从外部执行 IPv4、IPv6 的完整 SSH 密钥登录；TCP 22 连通或 AAAA 正确都不能代替登录验收。LAN 公网 IPv6 属于路由器本机时，配置的是 WAN 入站 input 规则，不是转发到 LAN 主机的端口转发。
+
+固件编译不改变已运行设备的 SSH 与防火墙配置。保留配置升级、旧系统迁移或修改 DDNS 地址来源后，都需要重新核对这两层；应用过滤的自启修正也不会处理 SSH 的监听或入站规则。

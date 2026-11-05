@@ -72,6 +72,7 @@ GitHub Actions 工具仍固定经过选择的稳定提交；它们是构建工�
 - [固定版配方与锁文件](immortalwrt-25.12-fixed-25.12.2-20261105/README.md)
 - [最新版固件配置](immortalwrt-25.12/config.seed)
 - [ACME 配置及现场迁移经验](immortalwrt-25.12/OPERATIONS.md)
+- [IPv6 SSH 监听、WAN 规则及迁移排查](immortalwrt-25.12/OPERATIONS.md#ipv6-ssh-监听与-wan-放行)
 - [固件下载](https://github.com/se7enmuting/Actions-ImmortalWrt/releases)
 
 固件不包含密码、订阅及 DDNS 密钥。先使用隔离的 PVE 测试虚拟机验证；编译成功不代表实际网络功能已验收。最新版可能因上游变更出现不兼容；流程会保留诊断并停止，不会悄悄退回旧组件。
