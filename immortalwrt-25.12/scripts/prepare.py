@@ -4,6 +4,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -49,6 +50,19 @@ def copy_asset(spec, assets, destination):
     shutil.copyfile(source, destination)
 
 
+def render_feeds(lock):
+    ordered = lock["plugin_feeds"] + [name for name in lock["feeds"] if name not in lock["plugin_feeds"]]
+    if len(ordered) != len(set(ordered)):
+        raise RuntimeError("Duplicate feed identifier")
+    for name in ordered:
+        if not re.fullmatch(r"[A-Za-z0-9_]+", name):
+            raise RuntimeError(f"Invalid feed identifier: {name}")
+    return "".join(
+        f"src-git {name} {lock['feeds'][name]['url']}^{lock['feeds'][name]['commit']}\n"
+        for name in ordered
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("work", type=Path)
@@ -58,13 +72,11 @@ def main():
     work = args.work.resolve()
     lock = json.loads(args.lock.read_text(encoding="utf-8"))
     checkout(lock["core"], work)
-    # Prefer upstream plugins when resolving dependencies from any feed.
-    ordered = lock["plugin_feeds"] + [name for name in lock["feeds"] if name not in lock["plugin_feeds"]]
-    lines = [
-        f"src-git {name} {lock['feeds'][name]['url']}^{lock['feeds'][name]['commit']}"
-        for name in ordered
-    ]
-    (work / "feeds.conf.default").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    # Root-level LuCI recipes need their canonical hyphenated package directory.
+    # A feed ID cannot contain hyphens, so install these as standalone packages.
+    for spec in lock["packages"].values():
+        checkout(spec, work / "package/custom" / spec["package_dir"])
+    (work / "feeds.conf.default").write_text(render_feeds(lock), encoding="utf-8")
     shutil.copytree(RECIPE / "files", work / "files", dirs_exist_ok=True)
     for f in (work / "files/etc/uci-defaults").iterdir():
         f.chmod(0o755)

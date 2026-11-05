@@ -12,8 +12,6 @@ EXPECTED = {
     "passwall_packages": ["xray-core", "sing-box", "geoview"],
     "bandix_backend": ["bandix"],
     "bandix_luci": ["luci-app-bandix"],
-    "luci-theme-argon": ["luci-theme-argon"],
-    "luci-app-argon-config": ["luci-app-argon-config"],
     "oaf": ["luci-app-oaf", "appfilter", "kmod-oaf"],
 }
 
@@ -51,6 +49,14 @@ def verify(work):
                 "makefile": str(makefile.relative_to(work)),
                 "variables": variables,
             }
+    for name, spec in lock["packages"].items():
+        source = work / "package/custom" / spec["package_dir"]
+        if revision(source) != spec["commit"] or not (source / "Makefile").is_file():
+            raise RuntimeError(f"Standalone package source mismatch: {name}")
+        recipes[spec["package_dir"]] = {
+            "source": name, "commit": spec["commit"],
+            "makefile": str((source / "Makefile").relative_to(work)),
+        }
     lock["package_recipes"] = recipes
     lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
     print(f"Verified core, {len(lock['feeds'])} feed commits and {len(recipes)} upstream package origins")

@@ -24,13 +24,15 @@
       "url": "https://github.com/timsaya/luci-app-bandix.git",
       "ref": "main"
     },
-    "luci-theme-argon": {
+    "argon": {
       "url": "https://github.com/jerrykuku/luci-theme-argon.git",
-      "ref": "master"
+      "ref": "master",
+      "package_dir": "luci-theme-argon"
     },
-    "luci-app-argon-config": {
+    "argon_config": {
       "url": "https://github.com/jerrykuku/luci-app-argon-config.git",
-      "ref": "master"
+      "ref": "master",
+      "package_dir": "luci-app-argon-config"
     },
     "oaf": {
       "url": "https://github.com/destan19/OpenAppFilter.git",

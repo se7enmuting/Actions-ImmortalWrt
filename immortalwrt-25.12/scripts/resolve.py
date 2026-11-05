@@ -159,6 +159,22 @@ def resolve_geodata(policies, assets):
     return result
 
 
+def resolve_plugins(policies, feeds):
+    plugin_feeds = []
+    packages = {}
+    for name, spec in policies.items():
+        if not re.fullmatch(r"[A-Za-z0-9_]+", name) or name in feeds:
+            raise RuntimeError(f"Invalid or duplicate feed identifier: {name}")
+        if "package_dir" in spec:
+            if spec["package_dir"] not in {"luci-theme-argon", "luci-app-argon-config"}:
+                raise RuntimeError(f"Unsupported standalone package: {spec['package_dir']}")
+            packages[name] = resolve_branch(spec)
+        else:
+            feeds[name] = resolve_branch(spec)
+            plugin_feeds.append(name)
+    return plugin_feeds, packages
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--policy", type=Path, default=RECIPE / "sources.json")
@@ -174,10 +190,7 @@ def main():
         raise RuntimeError("This recipe follows openwrt-25.12, not system master")
     core = resolve_branch(policy["core"])
     feeds = resolve_feeds(core)
-    for name, spec in policy["plugins"].items():
-        if name in feeds:
-            raise RuntimeError(f"Plugin shadows official feed name: {name}")
-        feeds[name] = resolve_branch(spec)
+    plugin_feeds, packages = resolve_plugins(policy["plugins"], feeds)
     lock = {
         "schema_version": 1, "mode": "latest",
         "release": "25.12-SNAPSHOT",
@@ -185,7 +198,7 @@ def main():
         "recipe_commit": os.getenv("GITHUB_SHA", "local"),
         "policy_sha256": hashlib.sha256(args.policy.read_bytes()).hexdigest(),
         "core": core, "feeds": feeds,
-        "plugin_feeds": list(policy["plugins"]),
+        "plugin_feeds": plugin_feeds, "packages": packages,
         "mihomo": resolve_mihomo(policy["mihomo"], args.assets),
         "geodata": resolve_geodata(policy["geodata"], args.assets),
     }
