@@ -34,6 +34,18 @@ class FixedSecurity(unittest.TestCase):
             for name, digest in lock["security_revision"]["expected_files"].items():
                 self.assertEqual(hashlib.sha256((work / name).read_bytes()).hexdigest(), digest, name)
 
+    def test_fixed_asn_snapshot_retains_original_digest_without_network(self):
+        lock = json.loads((FIXED / "sources.lock.json").read_text())
+        spec = next(s for s in lock["geodata"] if s["file"] == "ASN.mmdb")
+        self.assertEqual(spec["sha256"], "3169b9ea7dad762f6837b95408dadc1173f47be33be2d83b6c90e67a57a7eb2e")
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory, patch.object(prepare.urllib.request, "urlopen", side_effect=AssertionError("network")):
+            path = Path(directory) / "ASN.mmdb"
+            prepare.install_geodata(spec, path)
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), spec["sha256"])
+            with self.assertRaisesRegex(RuntimeError, "SHA256 mismatch"):
+                prepare.install_geodata({**spec, "sha256": "0" * 64}, path)
+
     def test_old_or_missing_security_package_versions_block_publication(self):
         good = "uhttpd - 2026.08.24~373145f7-r1\nopenssl-util - 3.5.9-r1\nca-bundle - 20260816-r2\n"
         with tempfile.TemporaryDirectory() as directory:
