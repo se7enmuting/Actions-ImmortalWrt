@@ -2,6 +2,21 @@
 
 适用于 g-pve / b-pve 下的 x86_64 路由虚拟机。两地共用固件，网络、密码、订阅及 DDNS 凭据在安装后分别配置。
 
+## Latest 25.12 使用哪个系统分支？
+
+**本流程的系统源码基于 [`openwrt-25.12` 维护分支](https://github.com/immortalwrt/immortalwrt/tree/openwrt-25.12)，每次运行获取该分支的最新提交。** `Latest 25.12` 表示 25.12 系列内的最新维护代码。
+
+| 来源 | 本流程的选择与含义 |
+|---|---|
+| ImmortalWrt 系统源码、内核 | 使用 `immortalwrt/immortalwrt` 的 **`openwrt-25.12`** 维护分支 |
+| 原生 packages、LuCI 等软件源 | 使用 [sources.json](sources.json) 指定的配套 **`openwrt-25.12`** 维护分支 |
+| ImmortalWrt 系统 [`master`](https://github.com/immortalwrt/immortalwrt/tree/master) | 最新开发分支；**本流程不使用，也不自动切换到它** |
+| 独立插件的 `master/main` | 指 OpenClash、PassWall 等插件各自仓库的主分支，具体选择见下文；与 ImmortalWrt 系统分支分别指定 |
+
+固件版本可能显示 **`25.12-SNAPSHOT`**，这是 25.12 维护分支构建的版本标识，不表示系统来自 `master`。本流程也不锁定在官方 `v25.12.2` 标签；需要该标签基线时，使用固定版流程。
+
+每次实际使用的系统分支及提交保存在固件随附的 `build-lock.json` 中，可查看 `core.ref`（应为 `openwrt-25.12`）和 `core.commit`，并核对 `BUILD-INFO.md` 的 `System branch`。
+
 ## 如何运行
 
 进入仓库 Actions → **Build ImmortalWrt PVE (Latest 25.12)** → **Run workflow**。
