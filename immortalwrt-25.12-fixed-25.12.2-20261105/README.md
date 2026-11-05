@@ -4,6 +4,17 @@
 
 适用于 g-pve / b-pve 下的 x86_64 路由虚拟机。两地共用固件，网络、密码、订阅及 DDNS 凭据在安装后分别配置。
 
+## 官方基线与配方日期
+
+| 项目 | 说明 |
+|---|---|
+| 官方源码标签 | [`v25.12.2`](https://github.com/immortalwrt/immortalwrt/releases/tag/v25.12.2) |
+| 官方标签页面日期 | **Sep 6（9 月 6 日）**，页面标注 `tagged this 06 Sep` |
+| 锁定的系统源码提交 | [`4fc16f2`](https://github.com/immortalwrt/immortalwrt/commit/4fc16f2985a358bd43bb522e43f05395fcbd6ed5) |
+| 本仓库固定配方日期 | **20261105（2026 年 11 月 5 日）**，用于标识本仓库整理的固定配方，不是官方标签日期 |
+
+本流程以该官方标签的系统源码为基础，加入本仓库选定的插件、配置、服务启动与参数兼容修正，以及 Fullcone 内核修复回移，生成自定义固件。软件源及资产分别按 [sources.lock.json](sources.lock.json) 锁定；其中 packages/luci 的提交日期见下方“来源与版本”，不能将全部组件都理解为 9 月 6 日的版本。
+
 ## 如何运行
 
 进入仓库 Actions → **Build ImmortalWrt PVE (Fixed 25.12.2 / 20261105)** → **Run workflow**。
