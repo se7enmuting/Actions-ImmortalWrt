@@ -17,11 +17,12 @@ packages = [
     if key.startswith("CONFIG_PACKAGE_") and value == "y" and "_INCLUDE_" not in key and not key.endswith("_Transparent_Proxy")
 ]
 # Install upstream plugins first. feeds install -f alone does not replace
-# already installed packages from another feed. Maintenance packages follow.
+# already installed packages from another feed. Then link only requested
+# maintenance packages and their dependencies; unrelated recipes can have
+# Kconfig cycles even when they are not selected for this firmware.
 lock = json.loads((work / "build-lock.json").read_text(encoding="utf-8"))
 for feed in lock["plugin_feeds"]:
     subprocess.run(["./scripts/feeds", "install", "-a", "-f", "-p", feed], cwd=work, check=True)
-subprocess.run(["./scripts/feeds", "install", "-a", "-p", "packages"], cwd=work, check=True)
 subprocess.run(["./scripts/feeds", "install", *packages], cwd=work, check=True)
 # New OAF creates these lazily at first start. Ship its own templates so the
 # first-boot profile can set filtering, recording and MAC defaults before start.
