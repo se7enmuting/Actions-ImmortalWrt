@@ -71,6 +71,8 @@ vnStat/vnStat2 页面、翻译与后台已从本配方移除，保留 Bandix 和
 
 输出 BIOS/UEFI 两种启动方式的 ext4、squashfs 镜像，以及 QCOW2 镜像；根分区 2048 MiB、内核分区 64 MiB。新 VM 建议分配至少 4 GiB 虚拟磁盘、2 GiB 内存。
 
+构建自动选择本次维护源已提供的最新稳定 Go，并记录版本、配方及默认选择项调整前后的 SHA256。下载后读取 Xray、sing-box、geoview 的原始 `go.mod`，检查编译器版本是否足够；不修改代理源码的版本要求，也不自动下载 Go 的外部 toolchain。维护源无法满足时，在完整编译前停止。
+
 构建先检查系统及全部 feeds 的提交、独立插件实际来源，再运行 make defconfig，严格核对显式配置，避免插件依赖不满足时被静默取消。构建成功后再核对包清单、BTF/eBPF/VirtIO 内核选项和镜像完整性，才上传固件及发布 Release。
 
 每次输出带 resolved.config、kernel.config、config.buildinfo、包清单、sources.json、build-lock.json 和 SHA256SUMS。失败构建保留配置及日志供排查。构建通过不等于实际网络功能已验收。
@@ -84,3 +86,5 @@ vnStat/vnStat2 页面、翻译与后台已从本配方移除，保留 Bandix 和
 - https://github.com/timsaya/openwrt-bandix
 - https://github.com/MetaCubeX/mihomo
 - https://github.com/destan19/OpenAppFilter
+
+构建和发布的阶段区分、草稿发布及仅重跑 release job 的说明见[仓库首页](../README.md#构建失败与发布重试)。

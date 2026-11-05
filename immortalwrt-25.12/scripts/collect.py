@@ -99,6 +99,7 @@ def main():
         f"- Resolved at (UTC): {lock['resolved_at']}\n"
         f"- Build: {os.getenv('GITHUB_RUN_NUMBER', 'local')}/{os.getenv('GITHUB_RUN_ATTEMPT', '1')}\n"
         f"- Mihomo: {lock['mihomo']['version']} ({lock['mihomo']['architecture']}, SHA256 checked)\n"
+        f"- Go compiler: {lock['go_toolchain']['version']} (official maintenance recipe; module requirements checked).\n"
         "- Plugins: upstream master/main revisions recorded in build-lock.json.\n"
         "- Bandix backend uses the upstream recipe and checksummed binary.\n"
         "- Official feeds: 25.12 maintenance revisions recorded in build-lock.json.\n"
