@@ -131,6 +131,14 @@
       "upstream_commit": "1684a761a3bb99f11bb87eb02f62894563e119c6",
       "upstream_url": "https://github.com/immortalwrt/immortalwrt/commit/1684a761a3bb99f11bb87eb02f62894563e119c6",
       "scope": "musl reviewed security backport"
+    },
+    {
+      "file": "patches/b2e0be4-luci-wol.patch",
+      "sha256": "cdb2da6c624cbd2812697691c7cc47afeb9bb5e81ac7a36227f74ed0e56f6bc0",
+      "feed": "luci",
+      "upstream_commit": "b2e0be4b46ec0fd43394c081fa7c50657af14011",
+      "upstream_url": "https://github.com/immortalwrt/luci/commit/b2e0be4b46ec0fd43394c081fa7c50657af14011",
+      "scope": "Declare parts in the luci-app-wol RPC handler"
     }
   ],
   "security_revision": {

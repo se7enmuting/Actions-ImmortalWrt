@@ -1,0 +1,13 @@
+diff --git a/applications/luci-app-wol/root/usr/share/rpcd/ucode/luci.wol b/applications/luci-app-wol/root/usr/share/rpcd/ucode/luci.wol
+index 7e410a4ad0..fd9e9f0485 100644
+--- a/applications/luci-app-wol/root/usr/share/rpcd/ucode/luci.wol
++++ b/applications/luci-app-wol/root/usr/share/rpcd/ucode/luci.wol
+@@ -38,7 +38,7 @@ const methods = {
+ 		call: function(request) {
+ 			const result = {};
+ 			if (request.args.name == etherwake || request.args.name == wakeonlan) {
+-				parts = map(request.args.args, shellquote);
++				let parts = map(request.args.args, shellquote);
+ 				const fd = popen(request.args.name + ' ' + join(' ', parts));
+ 
+ 				result.stdout = fd.read('all');

@@ -43,8 +43,15 @@ def checkout(spec, destination):
         raise RuntimeError(f"Source revision mismatch: {destination}")
 
 
-def apply_backports(work, lock):
+def apply_backports(work, lock, feed=None):
+    if feed is not None:
+        work = work / "feeds" / feed
+        actual = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=work, text=True).strip()
+        if actual != lock["feeds"][feed]["commit"]:
+            raise RuntimeError(f"Fixed feed changed: {feed}")
     for spec in lock["patches"]:
+        if spec.get("feed") != feed:
+            continue
         patch = RECIPE / spec["file"]
         if hashlib.sha256(patch.read_bytes()).hexdigest() != spec["sha256"]:
             raise RuntimeError(f"Backport SHA256 mismatch: {spec['file']}")

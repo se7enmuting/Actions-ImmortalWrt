@@ -65,6 +65,10 @@ Bandix 是唯一额外引入的插件源，LuCI 和后端打包仓库均固定�
 
 OpenAppFilter 的官方集成目前使用上游 v6.1.8 后端，LuCI 包显示 6.1.4；这是官方配套集成，版本号不等于未维护。没有额外切换到上游 7.x 或修改旧版来强制兼容。
 
+### 网络唤醒修复
+
+LuCI feed 继续锁定在 `c84adb9`。构建在抓取 feed 后回移 [`b2e0be4`](https://github.com/immortalwrt/luci/commit/b2e0be4b46ec0fd43394c081fa7c50657af14011) 中的一行，在 `luci-app-wol` 后端声明局部变量 `parts`，修复点击「唤醒」时的 RPC 报错。补丁摘要随 `build-lock.json` 记录。
+
 ### nlbwmon 修复与 vnStat 移除
 
 vnStat/vnStat2 页面、翻译与后台已从本配方移除，保留 Bandix 和 nlbwmon。固定版回移官方 `ae5a064` 的 Linux 6.12 连接事件链修复，最新版使用维护分支已有修复；构建后检查实际内核选项，不能只凭服务运行判定采集正常。详见 [修复和验收说明](OPERATIONS.md#nlbwmon-与-fullcone-的连接事件修复)。
