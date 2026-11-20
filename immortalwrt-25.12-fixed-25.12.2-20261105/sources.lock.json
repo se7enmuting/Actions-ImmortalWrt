@@ -139,6 +139,14 @@
       "upstream_commit": "b2e0be4b46ec0fd43394c081fa7c50657af14011",
       "upstream_url": "https://github.com/immortalwrt/luci/commit/b2e0be4b46ec0fd43394c081fa7c50657af14011",
       "scope": "Declare parts in the luci-app-wol RPC handler"
+    },
+    {
+      "file": "patches/4c3a649-rust-build-llvm.patch",
+      "sha256": "9943f62cded955a70ec7ec3319552ccaceccacf063fe5c0ac44fcb396bb49b9b",
+      "feed": "packages",
+      "upstream_commit": "4c3a649dd78b76a14b55799d5ee871eb060c08e1",
+      "upstream_url": "https://github.com/openwrt/packages/commit/4c3a649dd78b76a14b55799d5ee871eb060c08e1",
+      "scope": "Build LLVM from the pinned Rust source instead of downloading expired CI artifacts"
     }
   ],
   "security_revision": {

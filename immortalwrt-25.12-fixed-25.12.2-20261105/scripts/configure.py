@@ -12,6 +12,7 @@ from verify_config import read_config
 recipe = Path(__file__).resolve().parents[1]
 work = Path(sys.argv[1]).resolve()
 lock = json.loads((work / "build-lock.json").read_text(encoding="utf-8"))
+apply_backports(work, lock, feed="packages")
 apply_backports(work, lock, feed="luci")
 settings = read_config(recipe / "config.seed")
 packages = [
